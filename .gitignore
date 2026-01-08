@@ -7,9 +7,6 @@ env/
 venv/
 .Python
 
-# Data / models
-data/
-models/
 
 # IDE
 .vscode/
