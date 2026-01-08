@@ -3,17 +3,22 @@ import joblib
 import numpy as np
 import pandas as pd
 import folium
+import os
 from streamlit_folium import st_folium
 
 # ======================= LOAD ML MODELS =======================
-clf = joblib.load("..\\models\\availability_model.pkl")
-reg = joblib.load("..\\models\\quantity_model.pkl")
-j_model = joblib.load("..\\models\\juvenile_model.pkl")
+# Construct paths relative to this script's directory
+script_dir = os.path.dirname(os.path.abspath(__file__))
+models_dir = os.path.join(script_dir, "..", "models")
+
+clf = joblib.load(os.path.join(models_dir, "availability_model.pkl"))
+reg = joblib.load(os.path.join(models_dir, "quantity_model.pkl"))
+j_model = joblib.load(os.path.join(models_dir, "juvenile_model.pkl"))
 # Optional hybrid models (PCA + RF + GradientBoosting ensembles)
 try:
-    pca = joblib.load("..\\models\\pca_transform.pkl")
-    hyb_clf = joblib.load("..\\models\\hybrid_availability_model.pkl")
-    hyb_reg = joblib.load("..\\models\\hybrid_quantity_model.pkl")
+    pca = joblib.load(os.path.join(models_dir, "pca_transform.pkl"))
+    hyb_clf = joblib.load(os.path.join(models_dir, "hybrid_availability_model.pkl"))
+    hyb_reg = joblib.load(os.path.join(models_dir, "hybrid_quantity_model.pkl"))
 except Exception:
     pca = None
     hyb_clf = None
