@@ -1,127 +1,113 @@
-# src/map_app.py
-import streamlit as st
+import folium
 import numpy as np
 import pandas as pd
-import joblib
-import folium
+import streamlit as st
 from folium.plugins import HeatMap
 from streamlit_folium import st_folium
 
-# Load models (adjust filenames if different)
-clf = joblib.load("models/availability_model.pkl")
-reg = joblib.load("models/quantity_model.pkl")
-j_model = joblib.load("models/juvenile_model.pkl")
+from prediction_engine import predict_fishing_zone
+
+
+PIPELINE_OPTIONS = {
+    "Random Forest": "random_forest",
+    "XGBoost": "xgboost",
+    "Hybrid (PCA + RF + Boosting)": "hybrid",
+}
+
 
 st.set_page_config(page_title="Fish Map Heatmap", layout="wide")
-st.title("Live Map Heatmap Overlay — Fish Prediction & Juvenile Risk")
+st.title("Fish Prediction Heatmap and Safe-Zone Explorer")
 
-# Controls
 with st.sidebar:
     st.header("Heatmap Settings")
     center_lat = st.number_input("Center Latitude", value=15.0, format="%.6f")
     center_lon = st.number_input("Center Longitude", value=83.0, format="%.6f")
     radius_km = st.slider("Radius (km)", min_value=5, max_value=100, value=25)
-    grid_res = st.slider("Grid resolution (points per side)", min_value=10, max_value=80, value=30)
-    heat_type = st.selectbox("Heatmap Value", ["juvenile_risk_probability", "availability_prob", "predicted_quantity"])
+    grid_res = st.slider("Grid resolution (points per side)", min_value=10, max_value=60, value=25)
+    heat_type = st.selectbox("Heatmap Value", ["juvenile_score", "availability_score", "predicted_quantity"])
+    pipeline = st.selectbox("ML pipeline", list(PIPELINE_OPTIONS.keys()), index=0)
     run_btn = st.button("Generate Heatmap")
 
-def make_latlon_grid(center_lat, center_lon, radius_km, n):
-    # approximate degrees per km (valid for small regions) ~ 1 deg lat ~ 111 km
-    deg = radius_km / 111.0
-    lat_min = center_lat - deg
-    lat_max = center_lat + deg
-    lon_min = center_lon - deg
-    lon_max = center_lon + deg
-    lats = np.linspace(lat_min, lat_max, n)
-    lons = np.linspace(lon_min, lon_max, n)
-    points = []
-    for la in lats:
-        for lo in lons:
-            points.append((la, lo))
-    return points
 
-def compute_scores(points):
-    # Build feature arrays for the models.
-    # Here: we need SST, Salinity, DO, History for availability/quantity models.
-    # Without real environmental values, use reasonable defaults or synthetic variation.
-    scores = []
-    for (lat, lon) in points:
-        # Simple synthetic environmental variation for demo:
-        # (Replace this with real environmental raster or API values)
-        sst = 27.5 + (lat - center_lat) * 0.1 + (lon - center_lon) * 0.05
-        sal = 34.0 + (lat - center_lat) * 0.02
-        do = 6.0 - abs(lat - center_lat) * 0.05
-        history = 400 + (np.sin(lat*3.14/180)*50)  # synthetic past catch proxy
+def make_latlon_grid(center_latitude: float, center_longitude: float, radius: float, resolution: int) -> list[tuple[float, float]]:
+    degrees = radius / 111.0
+    latitudes = np.linspace(center_latitude - degrees, center_latitude + degrees, resolution)
+    longitudes = np.linspace(center_longitude - degrees, center_longitude + degrees, resolution)
+    return [(lat, lon) for lat in latitudes for lon in longitudes]
 
-        main_feat = np.array([[sst, sal, do, history]])
-        juv_feat = np.array([[sst, sal, do]])
 
-        # availability probability (if classifier supports predict_proba)
-        try:
-            avail_prob = float(clf.predict_proba(main_feat)[0,1])
-        except Exception:
-            avail_prob = float(clf.predict(main_feat)[0])
+def synthetic_environment(lat: float, lon: float) -> tuple[float, float, float, float]:
+    sst = 27.5 + (lat - center_lat) * 0.12 + (lon - center_lon) * 0.05
+    salinity = 34.0 + (lat - center_lat) * 0.03
+    dissolved_oxygen = 6.2 - abs(lat - center_lat) * 0.06
+    historical_catch = 350 + (np.sin(np.radians(lat)) * 60) + (np.cos(np.radians(lon)) * 25)
+    return float(sst), float(salinity), float(dissolved_oxygen), float(max(historical_catch, 50.0))
 
-        # juvenile risk probability (we can convert class to numeric)
-        try:
-            # if juvenile model has predict_proba -> use probability of "High"
-            probs = j_model.predict_proba(juv_feat)
-            # find index of 'High' if label encoder used; otherwise assume order
-            # fallback: average probability of non-Low classes
-            if probs.shape[1] == 3:
-                juv_prob = float(probs[0, 0])  # may need mapping depending on training
-            else:
-                juv_prob = float(probs[0].max())
-        except Exception:
-            # If juvenile model outputs label, map it
-            lab = j_model.predict(juv_feat)[0]
-            juv_prob = {"Low": 0.1, "Medium": 0.5, "High": 0.9}.get(lab, 0.5)
 
-        # predicted quantity
-        try:
-            qty = float(reg.predict(main_feat)[0])
-        except Exception:
-            qty = 0.0
+def compute_scores(points: list[tuple[float, float]]) -> pd.DataFrame:
+    rows = []
+    for latitude, longitude in points:
+        sst, salinity, dissolved_oxygen, historical_catch = synthetic_environment(latitude, longitude)
+        result = predict_fishing_zone(
+            location=f"{latitude:.3f}, {longitude:.3f}",
+            sst=sst,
+            salinity=salinity,
+            dissolved_oxygen=dissolved_oxygen,
+            historical_catch=historical_catch,
+            latitude=latitude,
+            longitude=longitude,
+            model_choice=PIPELINE_OPTIONS[pipeline],
+        )
 
-        scores.append({
-            "lat": lat, "lon": lon,
-            "avail_prob": avail_prob,
-            "juv_prob": juv_prob,
-            "qty": qty
-        })
-    return pd.DataFrame(scores)
+        rows.append(
+            {
+                "lat": latitude,
+                "lon": longitude,
+                "availability_score": result.availability_score,
+                "juvenile_score": result.juvenile_score,
+                "quantity": result.quantity,
+                "juvenile_risk": result.juvenile_risk,
+            }
+        )
+
+    return pd.DataFrame(rows)
+
 
 if run_btn:
-    with st.spinner("Computing grid scores (this may take a few seconds)..."):
-        points = make_latlon_grid(center_lat, center_lon, radius_km, grid_res)
-        df = compute_scores(points)
+    with st.spinner("Computing grid scores..."):
+        score_frame = compute_scores(make_latlon_grid(center_lat, center_lon, radius_km, grid_res))
 
-    st.success("Computed scores for %d points" % len(df))
+    st.success(f"Computed scores for {len(score_frame)} grid points.")
 
-    # choose heat values
-    if heat_type == "juvenile_risk_probability":
-        heat_vals = df[["lat","lon","juv_prob"]].values.tolist()
-    elif heat_type == "availability_prob":
-        heat_vals = df[["lat","lon","avail_prob"]].values.tolist()
+    if heat_type == "juvenile_score":
+        heat_values = score_frame[["lat", "lon", "juvenile_score"]].values.tolist()
+    elif heat_type == "availability_score":
+        heat_values = score_frame[["lat", "lon", "availability_score"]].values.tolist()
     else:
-        # normalized quantity
-        q = df["qty"].values
-        qn = (q - q.min()) / (q.max() - q.min() + 1e-6)
-        heat_vals = np.column_stack([df["lat"].values, df["lon"].values, qn]).tolist()
+        quantity_values = score_frame["quantity"].values
+        normalized_quantity = (quantity_values - quantity_values.min()) / (quantity_values.max() - quantity_values.min() + 1e-6)
+        heat_values = np.column_stack([score_frame["lat"].values, score_frame["lon"].values, normalized_quantity]).tolist()
 
-    # Create Folium map
-    m = folium.Map(location=[center_lat, center_lon], zoom_start=9, tiles="OpenStreetMap")
-    HeatMap(heat_vals, radius=15, blur=10, max_zoom=13).add_to(m)
+    heatmap = folium.Map(location=[center_lat, center_lon], zoom_start=9, tiles="OpenStreetMap")
+    HeatMap(heat_values, radius=15, blur=10, max_zoom=13).add_to(heatmap)
 
-    # add some recommended safe points (low juvenile risk and high availability)
-    candidates = df[(df["juv_prob"] < 0.4) & (df["avail_prob"] > 0.5)].sort_values(by=["avail_prob","qty"], ascending=False).head(8)
-    for _, r in candidates.iterrows():
-        folium.CircleMarker(location=[r.lat, r.lon],
-                            radius=5,
-                            color="green",
-                            fill=True,
-                            fill_opacity=0.8,
-                            tooltip=f"Avail: {r.avail_prob:.2f}, Juv: {r.juv_prob:.2f}, Qty: {r.qty:.0f}").add_to(m)
+    candidates = score_frame[
+        (score_frame["juvenile_score"] < 0.4) & (score_frame["availability_score"] > 0.55)
+    ].sort_values(by=["availability_score", "quantity"], ascending=False).head(8)
 
-    st_folium(m, width=900, height=600)
-    st.dataframe(df.head(20))
+    for _, row in candidates.iterrows():
+        folium.CircleMarker(
+            location=[row.lat, row.lon],
+            radius=5,
+            color="green",
+            fill=True,
+            fill_opacity=0.8,
+            tooltip=(
+                f"Availability {row.availability_score:.2f} | "
+                f"Juvenile {row.juvenile_score:.2f} | "
+                f"Qty {row.quantity:.0f}"
+            ),
+        ).add_to(heatmap)
+
+    st_folium(heatmap, width=900, height=600)
+    st.dataframe(score_frame.head(20), use_container_width=True)

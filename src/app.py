@@ -1,34 +1,30 @@
-import streamlit as st
-import joblib
-import numpy as np
-import pandas as pd
 import folium
-import os
+import pandas as pd
+import streamlit as st
 from streamlit_folium import st_folium
 
-# ======================= LOAD ML MODELS =======================
-# Construct paths relative to this script's directory
-script_dir = os.path.dirname(os.path.abspath(__file__))
-models_dir = os.path.join(script_dir, "..", "models")
+from prediction_engine import PredictionResult, predict_fishing_zone
 
-clf = joblib.load(os.path.join(models_dir, "availability_model.pkl"))
-reg = joblib.load(os.path.join(models_dir, "quantity_model.pkl"))
-j_model = joblib.load(os.path.join(models_dir, "juvenile_model.pkl"))
-# Optional hybrid models (PCA + RF + GradientBoosting ensembles)
-try:
-    pca = joblib.load(os.path.join(models_dir, "pca_transform.pkl"))
-    hyb_clf = joblib.load(os.path.join(models_dir, "hybrid_availability_model.pkl"))
-    hyb_reg = joblib.load(os.path.join(models_dir, "hybrid_quantity_model.pkl"))
-except Exception:
-    pca = None
-    hyb_clf = None
-    hyb_reg = None
 
-# ======================= PAGE CONFIG =======================
+PIPELINE_OPTIONS = {
+    "Random Forest": "random_forest",
+    "XGBoost": "xgboost",
+    "Hybrid (PCA + RF + Boosting)": "hybrid",
+}
+
+REGIONS = {
+    "Vizag": {"lat": 17.6868, "lon": 83.2185, "sst": 29.0, "salinity": 33.0, "do": 6.2, "history": 300.0},
+    "Kakinada": {"lat": 16.9891, "lon": 82.2475, "sst": 28.0, "salinity": 34.0, "do": 6.5, "history": 260.0},
+    "Machilipatnam": {"lat": 16.1875, "lon": 81.1381, "sst": 27.0, "salinity": 32.0, "do": 6.8, "history": 210.0},
+    "Goa": {"lat": 15.2993, "lon": 74.1240, "sst": 30.0, "salinity": 35.0, "do": 5.7, "history": 280.0},
+    "Kochi": {"lat": 9.9312, "lon": 76.2673, "sst": 29.0, "salinity": 36.0, "do": 6.0, "history": 330.0},
+}
+
+
 st.set_page_config(page_title="AI-Driven Fish Catch Prediction System", layout="wide")
 
-# ======================= CSS THEME =======================
-st.markdown("""
+st.markdown(
+    """
 <style>
 body {background-color: #e6f4ff;}
 .card {
@@ -37,183 +33,232 @@ body {background-color: #e6f4ff;}
     border-radius: 12px;
     margin-bottom: 12px;
     border-left: 6px solid #0077b6;
-    box-shadow: 0px 3px 10px rgba(0,0,0,0.15);
+    box-shadow: 0 3px 10px rgba(0,0,0,0.15);
 }
 </style>
-""", unsafe_allow_html=True)
-
-# ======================= PROJECT HEADER =======================
-st.markdown("<h1 style='text-align:center; color:#005f99;'>🌊 AI-Driven Fish Catch Prediction System</h1>", unsafe_allow_html=True)
-st.markdown("<h3 style='text-align:center; color:#0077b6;'>With Juvenile Risk Assessment for Sustainable Fisheries</h3>",
-            unsafe_allow_html=True)
-st.write("---")
-
-# ======================= PREDICTION METHODS NAVIGATION =======================
-menu = st.radio(
-    "Choose Prediction Method",
-    ["Manual Input", "Select Region", "Map Based GPS Input"],
-    horizontal=True
+""",
+    unsafe_allow_html=True,
 )
 
-# Choose ML pipeline
-model_choice = st.selectbox("Choose ML Pipeline", ["Default (RF/XGB)", "Hybrid (PCA + RF + GB)"], index=0)
-
+st.markdown("<h1 style='text-align:center; color:#005f99;'>AI-Driven Fish Catch Prediction System</h1>", unsafe_allow_html=True)
+st.markdown(
+    "<h3 style='text-align:center; color:#0077b6;'>Fish availability, juvenile-risk screening, and safe-zone recommendation</h3>",
+    unsafe_allow_html=True,
+)
 st.write("---")
 
-# ======================= OUTPUT FUNCTION =======================
-def display_output(location, availability, quantity, juvenile_risk):
-    st.markdown("### 🎯 Prediction Summary")
+with st.sidebar:
+    st.header("Prediction Setup")
+    selected_pipeline = st.selectbox("ML pipeline", list(PIPELINE_OPTIONS.keys()), index=0)
+    st.caption("The app now uses one shared decision engine across manual, region, and map workflows.")
 
-    st.markdown(f"<div class='card'><h3>📍 Location: {location}</h3></div>", unsafe_allow_html=True)
+menu = st.radio("Choose prediction method", ["Manual Input", "Select Region", "Map Based GPS Input"], horizontal=True)
+st.write("---")
 
-    if availability == 0:
-        st.markdown("<div class='card'><h3>🔴 Fish Availability: NO</h3></div>", unsafe_allow_html=True)
-        st.error("📌 Fishing Not Recommended")
-        st.info("➡ Try shifting to nearby zones (5–10 km).")
-    else:
-        st.markdown("<div class='card'><h3>🟢 Fish Availability: YES</h3></div>", unsafe_allow_html=True)
-        st.markdown(f"<div class='card'><h3>🎣 Predicted Catch Quantity: {quantity:.2f} kg</h3></div>", unsafe_allow_html=True)
 
-        if juvenile_risk == 'High':
-            st.markdown("<div class='card'><h3>🔴 Juvenile Risk: HIGH ⚠</h3></div>", unsafe_allow_html=True)
-            st.error("❌ Fishing Not Recommended — High Juvenile Density")
-            st.info("➡ Suggested shift: Move 8–15 km away.")
-        elif juvenile_risk == 'Medium':
-            st.markdown("<div class='card'><h3>🟡 Juvenile Risk: MEDIUM</h3></div>", unsafe_allow_html=True)
-            st.warning("👉 Fishing Allowed With Caution")
-            st.info("➡ Recommended mesh size ≥ 45 mm.")
-        else:
-            st.markdown("<div class='card'><h3>🟢 Juvenile Risk: LOW</h3></div>", unsafe_allow_html=True)
-            st.success("✔ Safe Fishing Zone")
-            st.info("➡ Continue sustainable fishing practices")
+def maturity_inputs(prefix: str) -> tuple[float | None, float | None]:
+    enabled = st.checkbox("Use maturity-based juvenile risk", key=f"{prefix}_maturity")
+    if not enabled:
+        return None, None
 
-# ======================= METHOD A: MANUAL INPUT =======================
+    with st.expander("Maturity-based juvenile-risk inputs", expanded=True):
+        observed_length = st.number_input(
+            "Observed fish length (cm)",
+            min_value=0.0,
+            value=12.0,
+            step=0.5,
+            key=f"{prefix}_observed_length",
+        )
+        maturity_length = st.number_input(
+            "Species maturity length (cm)",
+            min_value=0.0,
+            value=18.0,
+            step=0.5,
+            key=f"{prefix}_maturity_length",
+        )
+
+    return observed_length or None, maturity_length or None
+
+
+def display_output(result: PredictionResult) -> None:
+    st.markdown("### Prediction Summary")
+    st.markdown(f"<div class='card'><h3>Location: {result.location}</h3></div>", unsafe_allow_html=True)
+
+    column_1, column_2, column_3 = st.columns(3)
+    column_1.metric("Fish Availability", "YES" if result.availability else "NO")
+    column_2.metric("Catch Quantity", f"{result.quantity:.2f} kg" if result.availability else "Blocked")
+    column_3.metric("Juvenile Risk", result.juvenile_risk)
+
+    st.info(result.advisory)
+    st.caption(
+        f"Pipeline: {result.model_pipeline} | Availability score: {result.availability_score:.2f} | "
+        f"Juvenile score: {result.juvenile_score:.2f}"
+    )
+
+    detail_columns = st.columns(2)
+    detail_columns[0].metric("Base Juvenile Layer", result.base_juvenile_risk)
+    detail_columns[1].metric(
+        "Maturity Score",
+        f"{result.maturity_score:.2f}" if result.maturity_score is not None else "Not used",
+    )
+
+    if result.safe_zone_suggestions:
+        st.markdown("#### Suggested Safer Zones")
+        safe_zone_frame = pd.DataFrame(result.safe_zone_suggestions)
+        st.dataframe(
+            safe_zone_frame.rename(
+                columns={
+                    "zone": "Zone",
+                    "distance_km": "Distance (km)",
+                    "latitude": "Latitude",
+                    "longitude": "Longitude",
+                    "expected_juvenile_risk": "Expected Risk",
+                    "expected_quantity_kg": "Expected Quantity (kg)",
+                }
+            ),
+            use_container_width=True,
+        )
+
+        if result.latitude is not None and result.longitude is not None:
+            suggestion_map = folium.Map(location=[result.latitude, result.longitude], zoom_start=8)
+            folium.Marker(
+                [result.latitude, result.longitude],
+                tooltip="Selected Zone",
+                icon=folium.Icon(color="red"),
+            ).add_to(suggestion_map)
+
+            for zone in result.safe_zone_suggestions:
+                folium.Marker(
+                    [zone["latitude"], zone["longitude"]],
+                    tooltip=f'{zone["zone"]}: {zone["expected_juvenile_risk"]}',
+                    icon=folium.Icon(color="green"),
+                ).add_to(suggestion_map)
+
+            st_folium(suggestion_map, width=900, height=380, key=f"safe_zone_map_{result.location}")
+
+
+def run_prediction(
+    *,
+    location: str,
+    sst: float,
+    salinity: float,
+    dissolved_oxygen: float,
+    historical_catch: float,
+    latitude: float | None,
+    longitude: float | None,
+    observed_length: float | None,
+    maturity_length: float | None,
+) -> None:
+    result = predict_fishing_zone(
+        location=location,
+        sst=sst,
+        salinity=salinity,
+        dissolved_oxygen=dissolved_oxygen,
+        historical_catch=historical_catch,
+        latitude=latitude,
+        longitude=longitude,
+        model_choice=PIPELINE_OPTIONS[selected_pipeline],
+        observed_length_cm=observed_length,
+        maturity_length_cm=maturity_length,
+    )
+    display_output(result)
+
+
 if menu == "Manual Input":
-    st.header("📝 Manual Parameter Entry")
+    st.header("Manual Parameter Entry")
 
-    col1, col2 = st.columns(2)
-    with col1:
-        location = st.text_input("Enter Location", "Vizag")
-        SST = st.number_input("Sea Surface Temperature (°C)", 20, 35, 28)
-        Salinity = st.number_input("Salinity (PSU)", 20, 40, 33)
-    with col2:
-        DO = st.number_input("Dissolved Oxygen (mg/l)", 1.0, 10.0, 6.4)
-        History = st.number_input("Previous Avg Catch (kg)", 10, 1000, 200)
+    left_column, right_column = st.columns(2)
+    with left_column:
+        location = st.text_input("Location name", "Vizag")
+        latitude = st.number_input("Latitude (optional for safe-zone mapping)", value=17.6868, format="%.4f")
+        sst = st.number_input("Sea Surface Temperature (C)", min_value=20.0, max_value=35.0, value=28.0)
+    with right_column:
+        longitude = st.number_input("Longitude (optional for safe-zone mapping)", value=83.2185, format="%.4f")
+        salinity = st.number_input("Salinity (PSU)", min_value=20.0, max_value=40.0, value=33.0)
+        dissolved_oxygen = st.number_input("Dissolved Oxygen (mg/l)", min_value=1.0, max_value=10.0, value=6.4)
 
-    if st.button("🔍 Predict (Manual)"):
-        features = np.array([[SST, Salinity, DO, History]])
-        juvenile_features = np.array([[SST, Salinity, History]])
+    historical_catch = st.number_input("Previous Average Catch (kg)", min_value=10.0, max_value=2000.0, value=200.0)
+    observed_length, maturity_length = maturity_inputs("manual")
 
-        juvenile_risk = j_model.predict(juvenile_features)[0]
+    if st.button("Predict (Manual)"):
+        run_prediction(
+            location=location,
+            sst=sst,
+            salinity=salinity,
+            dissolved_oxygen=dissolved_oxygen,
+            historical_catch=historical_catch,
+            latitude=latitude,
+            longitude=longitude,
+            observed_length=observed_length,
+            maturity_length=maturity_length,
+        )
 
-        if model_choice == "Hybrid (PCA + RF + GB)" and pca is not None and hyb_clf is not None and hyb_reg is not None:
-            features_pca = pca.transform(features)
-            availability = hyb_clf.predict(features_pca)[0]
-            quantity = hyb_reg.predict(features_pca)[0]
-        else:
-            availability = clf.predict(features)[0]
-            quantity = reg.predict(features)[0]
-
-
-        # ---------------- HYBRID DECISION RULES ----------------
-        good_conditions = 0
-        if 22 <= SST <= 30: good_conditions += 1
-        if 30 <= Salinity <= 36: good_conditions += 1
-        if 5 <= DO <= 8: good_conditions += 1
-        if History >= 150: good_conditions += 1
-
-        # Rule 1: If environment conditions are mostly good → force YES
-        if good_conditions >= 3 and juvenile_risk != "High":
-            availability = 1
-            quantity = max(quantity, 200)
-
-
-            
-        # Rule 2: Override for major fishing hubs
-        prime_locations = ["Vizag", "Kakinada", "Chennai", "Goa", "Kochi", "Nellore", "Mangalore"]
-        if location in prime_locations and availability == 0:
-            availability = 1
-            quantity = max(quantity, 220)
-
-         # ---------------- DISPLAY RESULT ----------------
-        st.subheader("🎣 Prediction Results")
-        st.write(f"📍 **Location:** {location}")
-
-        if availability == 0:
-            st.error("🔴 **Fish Availability: NO**")
-            st.info("➡ Try shifting to nearby zones (5–10 km).")
-        else:
-            st.success("🟢 **Fish Availability: YES**")
-            st.write(f"🎣 **Predicted Catch Quantity:** {quantity:.2f} kg")
-
-            if juvenile_risk == "High":
-                st.error("⚠ **Juvenile Risk Level: HIGH — Fishing Not Recommended!**")
-            elif juvenile_risk == "Medium":
-                st.warning("🟡 Juvenile Risk Level: MEDIUM — Use caution")
-            else:
-                st.success("🟢 Juvenile Risk Level: LOW")
-                st.info("✔ Fishing Recommended")
-
-
-# ======================= METHOD B: REGION INPUT =======================
 elif menu == "Select Region":
-    st.header("📍 Region-Based Prediction")
+    st.header("Region-Based Prediction")
+    region = st.selectbox("Select coastal zone", list(REGIONS.keys()))
+    config = REGIONS[region]
+    observed_length, maturity_length = maturity_inputs("region")
 
-    regions = {
-        "Vizag": [29, 33, 6.2, 300],
-        "Kakinada": [28, 34, 6.5, 260],
-        "Machilipatnam": [27, 32, 6.8, 210],
-        "Goa": [30, 35, 5.7, 280],
-        "Kochi": [29, 36, 6.0, 330],
-    }
+    st.write(
+        f"Preloaded conditions: SST {config['sst']} C, Salinity {config['salinity']} PSU, "
+        f"DO {config['do']} mg/l, Historical Catch {config['history']} kg"
+    )
 
-    region = st.selectbox("Select Coastal Zone", regions.keys())
-    SST, Salinity, DO, History = regions[region]
+    if st.button("Predict (Region Based)"):
+        run_prediction(
+            location=region,
+            sst=config["sst"],
+            salinity=config["salinity"],
+            dissolved_oxygen=config["do"],
+            historical_catch=config["history"],
+            latitude=config["lat"],
+            longitude=config["lon"],
+            observed_length=observed_length,
+            maturity_length=maturity_length,
+        )
 
-    if st.button("🔍 Predict (Region Based)"):
-        features = np.array([[SST, Salinity, DO, History]])
-        juvenile_features = np.array([[SST, Salinity, History]])
-
-        juvenile_risk = j_model.predict(juvenile_features)[0]
-        if model_choice == "Hybrid (PCA + RF + GB)" and pca is not None and hyb_clf is not None and hyb_reg is not None:
-            features_pca = pca.transform(features)
-            availability = hyb_clf.predict(features_pca)[0]
-            quantity = hyb_reg.predict(features_pca)[0]
-        else:
-            availability = clf.predict(features)[0]
-            quantity = reg.predict(features)[0]
-
-        display_output(region, availability, quantity, juvenile_risk)
-
-# ======================= METHOD C: MAP GPS INPUT =======================
-elif menu == "Map Based GPS Input":
-    st.header("🗺 Select Location from Map")
+else:
+    st.header("Map Based GPS Input")
+    st.caption("Click a point on the map, then adjust the environmental inputs before running prediction.")
 
     map_center = [16.9891, 82.2475]
-    m = folium.Map(location=map_center, zoom_start=6)
-
-    map_output = st_folium(m, width=900, height=500)
+    base_map = folium.Map(location=map_center, zoom_start=6)
+    map_output = st_folium(base_map, width=900, height=500, key="selection_map")
 
     if map_output and map_output.get("last_clicked"):
-        lat = map_output["last_clicked"]["lat"]
-        lon = map_output["last_clicked"]["lng"]
+        st.session_state["selected_point"] = map_output["last_clicked"]
 
-        st.success(f"Selected Location → Lat: {lat:.3f}, Lon: {lon:.3f}")
+    selected_point = st.session_state.get("selected_point")
 
-        if st.button("🔍 Predict from Map"):
-            SST, Salinity, DO, History = 28, 33, 6.2, 250
-            features = np.array([[SST, Salinity, DO, History]])
-            juvenile_features = np.array([[SST, Salinity, History]])
+    if selected_point:
+        latitude = float(selected_point["lat"])
+        longitude = float(selected_point["lng"])
+        st.success(f"Selected location: lat {latitude:.3f}, lon {longitude:.3f}")
 
-            juvenile_risk = j_model.predict(juvenile_features)[0]
-            if model_choice == "Hybrid (PCA + RF + GB)" and pca is not None and hyb_clf is not None and hyb_reg is not None:
-                features_pca = pca.transform(features)
-                availability = hyb_clf.predict(features_pca)[0]
-                quantity = hyb_reg.predict(features_pca)[0]
-            else:
-                availability = clf.predict(features)[0]
-                quantity = reg.predict(features)[0]
+        left_column, right_column = st.columns(2)
+        with left_column:
+            sst = st.number_input("Sea Surface Temperature (C)", min_value=20.0, max_value=35.0, value=28.0, key="map_sst")
+            salinity = st.number_input("Salinity (PSU)", min_value=20.0, max_value=40.0, value=33.0, key="map_salinity")
+        with right_column:
+            dissolved_oxygen = st.number_input("Dissolved Oxygen (mg/l)", min_value=1.0, max_value=10.0, value=6.2, key="map_do")
+            historical_catch = st.number_input(
+                "Previous Average Catch (kg)",
+                min_value=10.0,
+                max_value=2000.0,
+                value=250.0,
+                key="map_history",
+            )
 
-            display_output(f"Lat:{lat}, Lon:{lon}", availability, quantity, juvenile_risk)
-
-# ======================== END ========================
+        observed_length, maturity_length = maturity_inputs("map")
+        if st.button("Predict From Map"):
+            run_prediction(
+                location=f"Lat {latitude:.3f}, Lon {longitude:.3f}",
+                sst=sst,
+                salinity=salinity,
+                dissolved_oxygen=dissolved_oxygen,
+                historical_catch=historical_catch,
+                latitude=latitude,
+                longitude=longitude,
+                observed_length=observed_length,
+                maturity_length=maturity_length,
+            )
