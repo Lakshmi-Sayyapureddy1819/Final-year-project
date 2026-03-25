@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Chapter 5 Conclusion and Future Scope</title>
+  <style>
+    body {
+      font-family: "Times New Roman", serif;
+      margin: 42px 56px;
+      color: #111;
+      line-height: 1.55;
+      font-size: 14pt;
+    }
+    h1, h2, h3 {
+      color: #0f2742;
+    }
+    h1 {
+      text-align: center;
+      font-size: 22pt;
+      margin-bottom: 18px;
+    }
+    h2 {
+      font-size: 17pt;
+      margin-top: 26px;
+      margin-bottom: 10px;
+    }
+    h3 {
+      font-size: 15pt;
+      margin-top: 18px;
+      margin-bottom: 8px;
+    }
+    p {
+      text-align: justify;
+      margin: 0 0 12px 0;
+    }
+    .figure {
+      margin: 18px 0 20px 0;
+      text-align: center;
+      page-break-inside: avoid;
+    }
+    .figure img {
+      width: 92%;
+      max-width: 760px;
+      border: 1px solid #c8d0d8;
+      padding: 8px;
+      background: #fff;
+    }
+    .caption {
+      font-size: 12pt;
+      margin-top: 8px;
+      font-style: italic;
+      text-align: center;
+    }
+    ul {
+      margin-top: 8px;
+      margin-bottom: 12px;
+    }
+    li {
+      margin-bottom: 8px;
+      text-align: justify;
+    }
+  </style>
+</head>
+<body>
+  <h1>Chapter 5<br>Conclusion and Future Scope of Work</h1>
+
+  <h2>5.1 Conclusion</h2>
+  <p>
+    The present project, titled <i>Fish Catch Prediction and Juvenile Risk Assessment System</i>,
+    was developed to provide a practical and sustainable decision-support framework for fishing
+    operations using machine learning. The implemented system combines environmental factors,
+    fisheries landing information, maturity-based biological knowledge, and field observations to
+    predict fish availability, estimate expected catch quantity, assess juvenile-risk level, and
+    recommend safer alternative fishing zones. This integrated approach makes the project useful
+    not only for technical demonstration but also for fisheries awareness and sustainable resource
+    usage.
+  </p>
+  <p>
+    One of the major strengths of the proposed system is that it moves beyond a single prediction
+    task. Instead of only identifying whether fish may be available, the system also estimates the
+    likely quantity of catch and checks whether the target zone contains an elevated juvenile-risk.
+    When the risk is high, the model does not stop with a warning; it extends the result into a
+    safe-zone advisory, thereby improving its practical value. This combination of prediction,
+    biological screening, and recommendation makes the project more meaningful than a basic
+    classification model.
+  </p>
+  <p>
+    The system is implemented using multiple machine learning pipelines. Fish availability is
+    treated as a classification problem, catch quantity is modeled as a regression task, and juvenile
+    risk is assessed using both exact maturity-based logic and an environmental fallback model. The
+    strongest availability result in the current validation was obtained from the Boosting model,
+    which reached an accuracy of <b>68.18%</b>. For quantity prediction, the Random Forest
+    regressor produced the lowest RMSE of approximately <b>37039.02</b>. The juvenile-risk model,
+    after balancing and improvement, achieved an accuracy of <b>77.27%</b> with a weighted F1-score
+    of <b>0.7538</b>. These outcomes show that the proposed system is not merely theoretical; it is
+    executable, testable, and capable of generating meaningful predictions from the available data.
+  </p>
+  <p>
+    Another key contribution of the project is the exact maturity-based juvenile-risk rule. When
+    the species name, observed fish length, and maturity length are available, the system applies a
+    biologically relevant formula to estimate juvenile-risk directly. When these values are absent,
+    the system uses the environmental fallback model so that prediction remains possible. This dual
+    strategy ensures both scientific relevance and practical usability. Therefore, the work
+    successfully demonstrates a tabular machine learning framework that is academically valid,
+    domain-relevant, and suitable for final-year project presentation.
+  </p>
+
+  <div class="figure">
+    <img src="reports/figures/system_architecture.svg" alt="System architecture">
+    <div class="caption">Figure 5.1 Block diagram of the proposed fish catch prediction and juvenile-risk assessment system.</div>
+  </div>
+
+  <h2>5.2 Contributions of the Proposed System</h2>
+  <p>
+    The proposed system makes several important technical and practical contributions in the area of
+    smart fisheries support. First, it provides a unified framework in which multiple prediction
+    objectives are handled together. Instead of separating availability prediction, catch estimation,
+    and juvenile-risk checking into unrelated tasks, the project combines them into one structured
+    workflow that is easier to operate and explain.
+  </p>
+  <p>
+    Second, the work uses domain-relevant real-world inputs such as CMFRI landing data, NOAA sea
+    surface temperature information, FishBase maturity values, and PFZ-style field observations.
+    This improves the authenticity of the project and makes the outputs more defensible during
+    technical review. Third, the system implements more than one algorithmic path, namely Random
+    Forest, Boosting, Hybrid modeling, and a separate juvenile-risk layer. This allows comparative
+    evaluation instead of relying on a single model choice.
+  </p>
+  <p>
+    The fourth major contribution is the inclusion of exact juvenile-risk assessment based on fish
+    maturity information. This gives the project a conservation-oriented dimension. The fifth
+    contribution is the safe-zone recommendation mechanism, which offers an actionable advisory when
+    the current zone is considered risky. Finally, the project includes testing, validation, and
+    algorithm demonstration support, making it suitable for academic presentation, viva, and future
+    enhancement.
+  </p>
+
+  <ul>
+    <li>Integrated fish availability prediction, catch quantity estimation, juvenile-risk assessment, and safe-zone recommendation in one system.</li>
+    <li>Used real-world fisheries and environmental data sources relevant to Indian coastal conditions.</li>
+    <li>Implemented multiple machine learning pipelines for comparative study and model selection.</li>
+    <li>Included exact maturity-based juvenile logic for biologically meaningful risk estimation.</li>
+    <li>Added a user-oriented advisory layer instead of limiting the output to raw predictions.</li>
+    <li>Provided testing, validation, and demonstration support for academic presentation.</li>
+  </ul>
+
+  <div class="figure">
+    <img src="reports/figures/juvenile_safe_zone_workflow.svg" alt="Juvenile and safe zone workflow">
+    <div class="caption">Figure 5.2 Exact and fallback juvenile-risk assessment workflow with safe-zone recommendation.</div>
+  </div>
+
+  <h2>5.3 Practical Implications and Applications</h2>
+  <p>
+    The proposed system has strong practical implications in the fisheries domain. It can support
+    fishers in selecting favorable fishing regions by estimating whether a location is likely to
+    yield usable catch. Such guidance can help reduce unnecessary fuel consumption, improve travel
+    planning, and support operational decision-making. Even when the prediction is probabilistic, a
+    model-based recommendation is valuable in marine conditions that often change rapidly.
+  </p>
+  <p>
+    The juvenile-risk module has particular importance from a sustainability perspective. Catching
+    juvenile fish at large scale can negatively affect stock renewal and long-term fishery
+    productivity. By checking the observed fish length against maturity length, the proposed system
+    introduces a biologically meaningful safeguard. This makes the project relevant not only for
+    machine learning demonstration but also for conservation-oriented fisheries planning.
+  </p>
+  <p>
+    The quantity estimation module can be useful for storage planning, labor arrangement, and local
+    market coordination. Educationally, the project can serve as a reference implementation for
+    applied machine learning with marine data. Institutionally, it can be extended by fisheries
+    departments or academic laboratories into a broader decision-support tool for research and
+    advisory use. Its modular structure also allows future inclusion of additional environmental
+    variables and location-aware intelligence without redesigning the full system.
+  </p>
+
+  <div class="figure">
+    <img src="reports/figures/availability_accuracy.png" alt="Availability accuracy comparison">
+    <div class="caption">Figure 5.3 Comparison of fish availability accuracy across the implemented models.</div>
+  </div>
+
+  <div class="figure">
+    <img src="reports/figures/quantity_rmse.png" alt="Quantity RMSE comparison">
+    <div class="caption">Figure 5.4 Comparison of catch quantity prediction error across the implemented models.</div>
+  </div>
+
+  <div class="figure">
+    <img src="reports/figures/juvenile_confusion_matrix.png" alt="Juvenile confusion matrix">
+    <div class="caption">Figure 5.5 Confusion matrix of the juvenile-risk assessment model.</div>
+  </div>
+
+  <h2>5.4 Recommendations for Future Work</h2>
+  <p>
+    Although the system has achieved its objective as a working prototype, there is considerable
+    scope for future enhancement. The first and most important direction is the expansion of the
+    dataset using monthly, district-level, harbor-level, or zone-level fisheries records. A richer
+    temporal and spatial dataset would allow the models to capture seasonal variation more
+    effectively and improve prediction stability.
+  </p>
+  <p>
+    The next important direction is the integration of additional oceanographic variables such as
+    salinity, chlorophyll concentration, currents, mixed layer depth, and improved dissolved oxygen
+    measurements. These variables have strong ecological relationships with fish habitat and may
+    improve both classification and regression performance. Another important enhancement is full
+    native XGBoost execution and broader hyperparameter tuning for all models.
+  </p>
+  <p>
+    A further recommendation is the collection of more exact juvenile field observations. At
+    present, the system supports exact maturity-based risk logic, but a larger field dataset would
+    make the juvenile model more statistically strong and biologically reliable. Future versions may
+    also incorporate uncertainty reporting, model explainability, GPS-assisted mobile deployment,
+    and long-term validation against official advisories and fisheries records.
+  </p>
+  <p>
+    Therefore, the current work can be viewed as a strong academic prototype with clear pathways
+    toward larger-scale deployment. Its modular design, real-world data orientation, and
+    sustainability focus make it a suitable base for further research and practical fisheries
+    applications.
+  </p>
+
+  <div class="figure">
+    <img src="reports/figures/improvement_comparison.png" alt="Improvement comparison">
+    <div class="caption">Figure 5.6 Performance comparison before and after improvement of the implemented models.</div>
+  </div>
+
+  <div class="figure">
+    <img src="reports/figures/future_scope_roadmap.svg" alt="Future scope roadmap">
+    <div class="caption">Figure 5.7 Future roadmap for improving data scale, algorithm quality, and field deployment.</div>
+  </div>
+</body>
+</html>

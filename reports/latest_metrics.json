@@ -1,0 +1,172 @@
+{
+  "dataset_path": "/Users/lakshmis/Final-year-project/data/multisource_training_data.csv",
+  "main_models": {
+    "dataset_rows": 110,
+    "feature_columns": [
+      "SST",
+      "Salinity",
+      "Dissolved_Oxygen",
+      "Historical_Catch",
+      "Latitude",
+      "Longitude",
+      "MonthSin",
+      "MonthCos",
+      "ThermalStress",
+      "OxygenStress",
+      "SalinityAnomaly",
+      "SST_Min",
+      "SST_Max",
+      "SST_Std",
+      "PFZ_Observations",
+      "PFZ_Mean_Distance_km",
+      "PFZ_Mean_Depth_m",
+      "YearNum",
+      "CatchLog",
+      "CatchPerThermal",
+      "TempOxygenInteraction"
+    ],
+    "target_column": "Landings_Tonnes",
+    "availability_class_counts": {
+      "0": 50,
+      "1": 60
+    },
+    "random_forest": {
+      "availability": {
+        "accuracy": 0.6364,
+        "precision_weighted": 0.6364,
+        "recall_weighted": 0.6364,
+        "f1_weighted": 0.6364,
+        "confusion_matrix": {
+          "0": {
+            "0": 6,
+            "1": 4
+          },
+          "1": {
+            "0": 4,
+            "1": 8
+          }
+        }
+      },
+      "quantity": {
+        "rmse": 37039.0236,
+        "mae": 27763.0918,
+        "r2": 0.9674
+      }
+    },
+    "boosting": {
+      "availability": {
+        "accuracy": 0.6818,
+        "precision_weighted": 0.6807,
+        "recall_weighted": 0.6818,
+        "f1_weighted": 0.6798,
+        "confusion_matrix": {
+          "0": {
+            "0": 6,
+            "1": 4
+          },
+          "1": {
+            "0": 3,
+            "1": 9
+          }
+        }
+      },
+      "quantity": {
+        "rmse": 50117.505,
+        "mae": 38793.6747,
+        "r2": 0.9404
+      },
+      "model_class": "sklearn.ensemble._gb.GradientBoostingClassifier"
+    },
+    "hybrid": {
+      "availability": {
+        "accuracy": 0.5909,
+        "precision_weighted": 0.5882,
+        "recall_weighted": 0.5909,
+        "f1_weighted": 0.5883,
+        "confusion_matrix": {
+          "0": {
+            "0": 5,
+            "1": 5
+          },
+          "1": {
+            "0": 4,
+            "1": 8
+          }
+        }
+      },
+      "quantity": {
+        "rmse": 43769.41,
+        "mae": 30930.9242,
+        "r2": 0.9545
+      }
+    }
+  },
+  "juvenile_model": {
+    "dataset_rows": 110,
+    "exact_label_rows": 3,
+    "class_counts": {
+      "Medium": 37,
+      "High": 37,
+      "Low": 36
+    },
+    "risk_source_counts": {
+      "Environmental heuristic": 107,
+      "Exact maturity rule": 3
+    },
+    "metrics": {
+      "accuracy": 0.7727,
+      "precision_weighted": 0.7795,
+      "recall_weighted": 0.7727,
+      "f1_weighted": 0.7538,
+      "confusion_matrix": {
+        "High": {
+          "High": 7,
+          "Low": 0,
+          "Medium": 1
+        },
+        "Low": {
+          "High": 0,
+          "Low": 7,
+          "Medium": 0
+        },
+        "Medium": {
+          "High": 1,
+          "Low": 3,
+          "Medium": 3
+        }
+      }
+    }
+  },
+  "field_data": {
+    "rows": 4,
+    "exact_ready_rows": 3,
+    "states": 3,
+    "species": 3
+  },
+  "demo_checks": [
+    {
+      "name": "Exact maturity high-risk case",
+      "passed": true,
+      "juvenile_risk": "High",
+      "juvenile_method": "Exact maturity rule (FishBase maturity reference + observed length)",
+      "maturity_length_cm": 16.3,
+      "availability": 0
+    },
+    {
+      "name": "Exact maturity low-risk case",
+      "passed": true,
+      "juvenile_risk": "Low",
+      "juvenile_method": "Exact maturity rule (FishBase maturity reference + observed length)",
+      "maturity_length_cm": 16.3,
+      "availability": 1
+    },
+    {
+      "name": "Environmental fallback case",
+      "passed": true,
+      "juvenile_risk": "High",
+      "juvenile_method": "Environmental juvenile model fallback",
+      "maturity_length_cm": null,
+      "availability": 0
+    }
+  ]
+}

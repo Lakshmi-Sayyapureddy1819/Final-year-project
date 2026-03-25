@@ -1,0 +1,5 @@
+State,Date,PFZ_Count,Distance_km,Depth_m,Species,Observed_Length_cm,Maturity_Length_cm,Data_Source,Recorded_By,Notes
+Andhra Pradesh,2023-03-24,1,18.5,55.0,Sardinella longiceps,12.0,16.3,Project demo sample observation,Codex Demo,Exact-ready demo row for high juvenile risk
+Tamil Nadu,2022-07-10,2,22.0,48.0,Rastrelliger kanagurta,24.0,21.0,Project demo sample observation,Codex Demo,Exact-ready demo row for low juvenile risk
+Goa,2021-08-18,1,16.0,42.0,Decapterus russelli,15.0,16.1,Project demo sample observation,Codex Demo,Exact-ready demo row for medium juvenile risk
+Andhra Pradesh,2026-03-24,1,18.5,55.0,,12.0,,INCOIS PFZ + field landing observation,,

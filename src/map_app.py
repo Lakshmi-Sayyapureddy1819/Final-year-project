@@ -10,8 +10,8 @@ from prediction_engine import predict_fishing_zone
 
 PIPELINE_OPTIONS = {
     "Random Forest": "random_forest",
-    "XGBoost": "xgboost",
-    "Hybrid (PCA + RF + Boosting)": "hybrid",
+    "Boosting": "xgboost",
+    "Hybrid (PCA + RF + ET + Boosting)": "hybrid",
 }
 
 

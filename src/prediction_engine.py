@@ -11,6 +11,8 @@ import joblib
 import numpy as np
 import pandas as pd
 
+from juvenile_risk_utils import known_species, lookup_maturity_length, maturity_risk_label
+
 
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
 MODELS_DIR = PROJECT_ROOT / "models"
@@ -29,14 +31,17 @@ class PredictionResult:
     location: str
     latitude: float | None
     longitude: float | None
+    species: str | None
     model_pipeline: str
     availability: int
     availability_score: float
     quantity: float
     base_juvenile_risk: str
     juvenile_risk: str
+    juvenile_method: str
     juvenile_score: float
     maturity_score: float | None
+    maturity_length_cm: float | None
     advisory: str
     safe_zone_suggestions: list[dict[str, Any]]
 
@@ -84,6 +89,10 @@ def build_feature_row(
 ) -> dict[str, float]:
     month_index = int(month or datetime.now().month)
     theta = (2 * np.pi * month_index) / 12.0
+    thermal_stress = float(abs(float(sst) - 27.0))
+    oxygen_stress = float(max(0.0, 5.5 - float(dissolved_oxygen)))
+    salinity_anomaly = float(abs(float(salinity) - 34.0))
+    current_year = float(datetime.now().year)
 
     return {
         "SST": float(sst),
@@ -95,9 +104,19 @@ def build_feature_row(
         "Month": float(month_index),
         "MonthSin": float(np.sin(theta)),
         "MonthCos": float(np.cos(theta)),
-        "ThermalStress": float(abs(float(sst) - 27.0)),
-        "OxygenStress": float(max(0.0, 5.5 - float(dissolved_oxygen))),
-        "SalinityAnomaly": float(abs(float(salinity) - 34.0)),
+        "ThermalStress": thermal_stress,
+        "OxygenStress": oxygen_stress,
+        "SalinityAnomaly": salinity_anomaly,
+        "SST_Min": float(sst) - 1.5,
+        "SST_Max": float(sst) + 1.5,
+        "SST_Std": float(1.0 + thermal_stress * 0.15),
+        "PFZ_Observations": 0.0,
+        "PFZ_Mean_Distance_km": 0.0,
+        "PFZ_Mean_Depth_m": 0.0,
+        "YearNum": current_year,
+        "CatchLog": float(np.log1p(max(float(historical_catch), 0.0))),
+        "CatchPerThermal": float(float(historical_catch) / (thermal_stress + 1.0)),
+        "TempOxygenInteraction": float(float(sst) * float(dissolved_oxygen)),
     }
 
 
@@ -161,7 +180,7 @@ def _predict_with_pipeline(
         availability = int(models["hyb_clf"].predict(transformed)[0])
         availability_score = _availability_probability(models["hyb_clf"], transformed, availability)
         quantity = float(models["hyb_reg"].predict(transformed)[0])
-        return availability, availability_score, quantity, "Hybrid (PCA + RF + Boosting)"
+        return availability, availability_score, quantity, "Hybrid (PCA + RF + ET + Boosting)"
 
     if model_choice == "xgboost" and models["xgb_clf"] is not None and models["xgb_reg"] is not None:
         xgb_features = _prepare_input(models["xgb_clf"], feature_row, LEGACY_MAIN_FEATURES)
@@ -197,32 +216,12 @@ def _predict_base_juvenile_risk(models: dict[str, Any], feature_row: dict[str, f
     return label, score
 
 
-def _maturity_risk_score(observed_length_cm: float | None, maturity_length_cm: float | None) -> float | None:
-    if observed_length_cm is None or maturity_length_cm is None:
-        return None
-    if observed_length_cm <= 0 or maturity_length_cm <= 0:
-        return None
-    return _clamp(1.0 - (float(observed_length_cm) / float(maturity_length_cm)))
-
-
-def _combine_juvenile_signals(
-    base_score: float,
-    maturity_score: float | None,
-) -> tuple[str, float]:
-    weighted_scores: list[tuple[float, float]] = [(base_score, 0.55)]
-
-    if maturity_score is not None:
-        weighted_scores.append((maturity_score, 0.45))
-
-    total_weight = sum(weight for _, weight in weighted_scores)
-    combined_score = sum(score * weight for score, weight in weighted_scores) / total_weight
-    combined_score = _clamp(combined_score)
-
-    if combined_score >= 0.67:
-        return "High", combined_score
-    if combined_score >= 0.4:
-        return "Medium", combined_score
-    return "Low", combined_score
+def _classify_risk_score(score: float) -> str:
+    if score >= 0.67:
+        return "High"
+    if score >= 0.4:
+        return "Medium"
+    return "Low"
 
 
 def _apply_decision_rules(
@@ -323,6 +322,7 @@ def predict_fishing_zone(
     salinity: float,
     dissolved_oxygen: float,
     historical_catch: float,
+    species: str | None = None,
     latitude: float | None = None,
     longitude: float | None = None,
     month: int | None = None,
@@ -348,8 +348,23 @@ def predict_fishing_zone(
     )
 
     base_juvenile_risk, base_score = _predict_base_juvenile_risk(models, feature_row)
-    maturity_score = _maturity_risk_score(observed_length_cm, maturity_length_cm)
-    juvenile_risk, juvenile_score = _combine_juvenile_signals(base_score, maturity_score)
+    looked_up_maturity_length, _ = lookup_maturity_length(species)
+    effective_maturity_length = maturity_length_cm if maturity_length_cm is not None else looked_up_maturity_length
+    maturity_risk, maturity_score = maturity_risk_label(observed_length_cm, effective_maturity_length)
+
+    if maturity_risk is not None and maturity_score is not None:
+        juvenile_risk = maturity_risk
+        juvenile_score = maturity_score
+        if maturity_length_cm is not None:
+            juvenile_method = "Exact maturity rule (entered observed and maturity lengths)"
+        elif species and looked_up_maturity_length is not None:
+            juvenile_method = "Exact maturity rule (FishBase maturity reference + observed length)"
+        else:
+            juvenile_method = "Exact maturity rule"
+    else:
+        juvenile_risk = _classify_risk_score(base_score)
+        juvenile_score = base_score
+        juvenile_method = "Environmental juvenile model fallback"
 
     availability, quantity = _apply_decision_rules(
         location=location,
@@ -370,14 +385,17 @@ def predict_fishing_zone(
         location=location,
         latitude=latitude,
         longitude=longitude,
+        species=species,
         model_pipeline=model_pipeline,
         availability=availability,
         availability_score=round(availability_score, 3),
         quantity=round(quantity, 2),
         base_juvenile_risk=base_juvenile_risk,
         juvenile_risk=juvenile_risk,
+        juvenile_method=juvenile_method,
         juvenile_score=round(juvenile_score, 3),
         maturity_score=round(maturity_score, 3) if maturity_score is not None else None,
+        maturity_length_cm=round(effective_maturity_length, 3) if effective_maturity_length is not None else None,
         advisory=_build_advisory(availability, juvenile_risk),
         safe_zone_suggestions=safe_zone_suggestions,
     )

@@ -1,0 +1,391 @@
+AI DRIVEN FISH CATCH PREDICTION SYSTEM WITH JUVENILE RISK ASSESSMENT FOR SUSTAINABLE FISHERIES
+
+Major Project Report
+
+Submitted in partial fulfillment of the requirements for the award of the degree of Bachelor of Technology in Computer Science and Engineering
+
+Department of Computer Science and Engineering
+
+Vignan's Institute of Information Technology
+
+Academic Year 2021-2025
+
+Certificate
+
+This is to certify that the project report entitled "AI Driven Fish Catch Prediction System with Juvenile Risk Assessment for Sustainable Fisheries" is a bonafide record of project work carried out under the supervision of the project guide by the project team during the academic year 2021-2025 in partial fulfillment of the requirements for the award of the degree of Bachelor of Technology in Computer Science and Engineering of Vignan's Institute of Information Technology (Autonomous).
+
+The results embodied in this report have not been submitted to any other University or Institute for the award of any Degree or Diploma.
+
+Project Guide: Dr. Ch. Swapna Priya, Associate Professor
+
+Head of the Department: Mr. B. Dinesh Reddy, Associate Professor
+
+Place: Visakhapatnam
+
+Date: __________________
+
+Declaration
+
+We hereby declare that the project report entitled "AI Driven Fish Catch Prediction System with Juvenile Risk Assessment for Sustainable Fisheries" has been written by us and has not been submitted either in part or in full for the award of any degree, diploma, or similar title to this or any other university.
+
+Place: Visakhapatnam
+
+Date: __________________
+
+Acknowledgment
+
+We express our sincere gratitude to our project guide, Dr. Ch. Swapna Priya, Associate Professor, Department of Computer Science and Engineering, for her continuous guidance, encouragement, and valuable suggestions throughout the development of this project. Her support helped us refine the methodology and improve the quality of the final implementation.
+
+We thank the Head of the Department, Mr. B. Dinesh Reddy, for his guidance and encouragement during the progress of the project. We also thank the Principal and the management of Vignan's Institute of Information Technology for providing the academic environment and resources required for the successful completion of this work.
+
+We are grateful to all the faculty and staff of the Department of Computer Science and Engineering for their suggestions and support. Finally, we thank our friends and family members for their encouragement throughout this project.
+
+Abstract
+
+Sustainable fisheries management requires predictive systems that balance fish availability with ecological protection. This project presents an AI Driven Fish Catch Prediction System integrated with a Juvenile Risk Assessment layer for sustainable fisheries decision support. The proposed system uses marine environmental variables, historical fish landing data, geographic information, and maturity-length references to predict fish availability, estimate catch quantity, and assess whether juvenile fish are likely to dominate the catch.
+
+The implemented framework follows a layered machine learning approach. Random Forest and boosting-based ensemble models are used for fish availability prediction and catch quantity estimation. A maturity-based juvenile-risk model compares the observed fish length with the maturity length of the species using the rule JR = 1 - (Observed Length / Maturity Length). When high juvenile-risk is detected, the system blocks risky fishing recommendations and suggests safer nearby zones within approximately 8-15 km. The system is deployed as a Streamlit application supporting manual input, region-based prediction, map-based prediction, and field-data recording.
+
+The project uses real-world fisheries and marine data sources including CMFRI landings, SST-linked environmental data, FishBase maturity references, and PFZ-style observation records. The final validated system demonstrates an operational, reproducible, and sustainability-aware approach for fisheries advisory support without relying on unsupported CNN or wildlife-image classification pipelines.
+
+Keywords: Fish Catch Prediction, Juvenile Risk Assessment, Sustainable Fisheries, Random Forest, Ensemble Learning, Fishery Decision Support, Safe-Zone Recommendation, Maturity-Length Analysis.
+
+Table of Contents
+
+Note: page numbers can be updated automatically after final formatting in Microsoft Word.
+
+- 1.1 Introduction
+- 1.2 Artificial Intelligence and Machine Learning in Fisheries
+- 1.3 Sustainable Fisheries and Juvenile Risk Assessment
+- 1.4 Objectives of the Project
+- 1.5 Problem Statement
+- 1.6 Scope of the Work
+- 2.1 Review of Literature on Fish Catch Prediction
+- 2.2 Oceanographic and Geographic Considerations
+- 2.3 Factors Affecting Fish Availability and Juvenile Presence
+- 2.4 Integration of Technology for Fisheries Decision Support
+- 2.5 Recent Advancements in Fisheries Informatics
+- 2.6 Research Gaps
+- 2.7 Motivation
+- 2.8 Problem Statement and Research Objectives
+- 2.9 Summary of Literature Review
+- 3.1 Research Design and Approach
+- 3.2 Data Collection and Preprocessing
+- 3.3 Fish Availability Prediction using Machine Learning
+- 3.4 Catch Quantity Estimation
+- 3.5 Juvenile Risk Assessment Layer
+- 3.6 Safe-Zone Recommendation and System Deployment
+- 4.1 Case Study: AI Driven Fish Catch Prediction for Sustainable Fisheries
+- 4.1.1 System Configuration and Technical Details
+- 4.1.2 Performance Evaluation and Validation
+- 4.2 Results and Discussion
+- 4.2.1 Fish Availability Prediction Results
+- 4.2.2 Catch Quantity Estimation Results
+- 4.2.3 Juvenile Risk Assessment Results
+- 4.2.4 Safe-Zone Recommendation Results
+- 4.2.5 Application Interface and Deployment
+- 4.3 Summary of Results
+- 5.1 Conclusion
+- 5.2 Contributions of the Proposed System
+- 5.3 Practical Implications and Applications
+- 5.4 Recommendations for Future Work
+- Chapter 6 References
+- Appendix
+List of Figures
+
+S.No | Name of the Figure
+
+1 | Overall System Architecture
+
+2 | Real-World Data Integration Flow
+
+3 | Feature Engineering and Preprocessing Pipeline
+
+4 | Fish Availability Prediction Flow
+
+5 | Juvenile Risk Assessment Logic
+
+6 | Safe-Zone Recommendation Flow
+
+7 | Manual Prediction Interface
+
+8 | Region-Based Prediction Interface
+
+9 | Map-Based Prediction Interface
+
+10 | Validation Metrics Summary
+
+List of Tables
+
+S.No | Name of the Table
+
+1 | Data Sources and Description
+
+2 | Input Features Used in the System
+
+3 | Availability Prediction Models
+
+4 | Catch Quantity Estimation Models
+
+5 | Juvenile Risk Classification Rules
+
+6 | Validation Metrics of the Proposed System
+
+Abbreviations
+
+Abbreviation | Expansion
+
+AI | Artificial Intelligence
+
+CMFRI | Central Marine Fisheries Research Institute
+
+DO | Dissolved Oxygen
+
+ML | Machine Learning
+
+NOAA | National Oceanic and Atmospheric Administration
+
+OISST | Optimum Interpolation Sea Surface Temperature
+
+PCA | Principal Component Analysis
+
+PFZ | Potential Fishing Zone
+
+RF | Random Forest
+
+RMSE | Root Mean Squared Error
+
+SST | Sea Surface Temperature
+
+XGB | Extreme Gradient Boosting
+
+Chapter 1: Introduction
+
+1.1 Introduction
+Fisheries are a major source of food, employment, and economic support for coastal communities. However, fish availability is highly dependent on environmental conditions, seasonality, and fishing pressure. Unsustainable harvesting, especially the capture of juvenile fish, can reduce future fish stocks and affect long-term ecosystem health. Therefore, there is a need for intelligent fisheries support systems that assist in decision making while also preserving marine resources.
+
+This project presents an AI Driven Fish Catch Prediction System with Juvenile Risk Assessment for Sustainable Fisheries. The system predicts whether fish are likely to be available in a selected zone, estimates expected catch quantity, evaluates juvenile-risk, and recommends safer nearby zones when ecological risk is high. The objective is not only productivity, but responsible and sustainable fishing support.
+
+1.2 Artificial Intelligence and Machine Learning in Fisheries
+Artificial Intelligence and Machine Learning are widely used for pattern recognition and predictive analytics in structured data. In fisheries, important factors such as sea surface temperature, salinity, dissolved oxygen, month, location, and historical landings can be modeled as predictive variables. Compared with manual observation alone, machine learning systems can reveal patterns that are difficult to detect consistently through traditional decision-making methods.
+
+In this project, fish availability is modeled as a classification problem and catch quantity is modeled as a regression problem. Ensemble methods such as Random Forest and boosting-based models are used because they are effective on nonlinear tabular data and are easier to interpret and validate than unsupported vision pipelines.
+
+1.3 Sustainable Fisheries and Juvenile Risk Assessment
+Prediction alone is not sufficient for sustainable fisheries. A system that recommends a productive zone without evaluating juvenile fish presence can encourage harmful harvesting. Juvenile fish are individuals that have not yet reached maturity. Their excessive capture affects recruitment and stock regeneration. Hence, juvenile-risk assessment is a core sustainability requirement.
+
+The implemented system uses maturity-length based biological assessment instead of image-based or video-based fish behavior analysis. This makes the project more realistic and defensible because the available datasets support tabular modeling and maturity-based reasoning better than deep-learning vision methods.
+
+1.4 Objectives of the Project
+- To predict fish availability using oceanographic and fisheries-related features.
+- To estimate expected catch quantity in favorable fishing zones.
+- To assess juvenile-risk using maturity-based biological logic.
+- To recommend safer nearby zones when juvenile-risk is high.
+- To build a practical user interface for prediction, validation, and field-data entry.
+1.5 Problem Statement
+Fishermen and marine stakeholders require a practical and data-driven decision-support system that can recommend productive fishing areas while reducing ecological risk. Existing academic drafts often overstate the use of CNN or video analytics even when suitable datasets are unavailable. There is a need for an implementation that is scientifically honest, uses real available data sources, and supports sustainable fisheries management through measurable prediction and juvenile-risk assessment.
+
+1.6 Scope of the Work
+The scope of this project includes real fisheries and environmental data integration, machine learning-based fish availability prediction, catch quantity estimation, maturity-based juvenile-risk screening, safe-zone recommendation, and a deployable Streamlit application. The current system does not include CNN, EfficientNetB7, R-CNN, DeepLabCut, or video-based fish behavior analysis because suitable annotated datasets are not available in the present work.
+
+Chapter 2: Literature Review
+
+2.1 Review of Literature on Fish Catch Prediction
+Several fisheries studies have shown that oceanographic variables such as SST, salinity, chlorophyll concentration, dissolved oxygen, and current movement are associated with fish presence and catch potential. Traditional statistical approaches and modern machine learning methods have both been applied for fish catch forecasting. Ensemble models are often preferred in applied marine problems because they capture nonlinear relationships and can perform reasonably well on medium-sized tabular datasets.
+
+2.2 Oceanographic and Geographic Considerations
+Fish distribution is shaped by marine temperature, salinity, dissolved oxygen, food availability, and ocean dynamics. Geographic position and seasonal variation also influence productivity. Therefore, any fisheries prediction system must account for both environmental and spatial features rather than relying on a single indicator.
+
+2.3 Factors Affecting Fish Availability and Juvenile Presence
+Fish availability depends on habitat suitability, migration, breeding cycles, and historical abundance patterns. Juvenile presence depends on recruitment cycles, maturity stage, habitat conditions, and fishing pressure. A sustainability-aware system must therefore consider not only whether fish are available, but also whether the catch is biologically safe.
+
+2.4 Integration of Technology for Fisheries Decision Support
+Government agencies and research institutions increasingly provide advisories, ocean condition datasets, and fisheries estimates. When these sources are integrated with machine learning and interactive interfaces, they can form useful decision-support tools. Modern fisheries informatics thus benefits from combining public datasets, predictive modeling, and geospatial interfaces.
+
+2.5 Recent Advancements in Fisheries Informatics
+Recent advancements include satellite-supported fisheries forecasting, ensemble models for marine suitability prediction, and geospatial marine dashboards. Sustainability-aware analytics is also becoming more important, especially systems that include stock protection, juvenile-risk avoidance, and advisory support rather than only catch maximization.
+
+2.6 Research Gaps
+- Many systems predict availability but ignore juvenile-risk.
+- Some studies depend on high-resolution or proprietary datasets that are difficult to access for student projects.
+- There is a gap between proposed methodology and actual implementable datasets in many academic reports.
+- Few student-level implementations combine prediction, ecological blocking, and safe-zone recommendation in one system.
+2.7 Motivation
+The motivation of this project is to build a realistic and defensible fisheries support system using actual available public data and biologically meaningful decision logic. The system aims to be useful for academic demonstration while remaining aligned with sustainable fisheries principles.
+
+2.8 Problem Statement and Research Objectives
+The research objective is to develop a machine learning framework that can integrate real-world fisheries data, marine environmental indicators, and maturity-based biological knowledge to support fish availability prediction, catch quantity estimation, juvenile-risk screening, and safe-zone recommendation.
+
+2.9 Summary of Literature Review
+The literature supports the use of environmental and historical variables in fisheries prediction, but also reveals the need for ecological safeguards. The proposed work addresses this gap by integrating a juvenile-risk layer and sustainable zone recommendation into the decision process.
+
+Chapter 3: Methodology
+
+3.1 Research Design and Approach
+The proposed system follows a layered design. First, real-world fisheries and marine datasets are collected and integrated. Second, preprocessing and feature engineering are performed. Third, machine learning models are trained for fish availability and catch quantity. Fourth, juvenile-risk is assessed using maturity-length logic. Finally, the decision engine recommends safer zones whenever ecological risk is high.
+
+3.2 Data Collection and Preprocessing
+The project uses the following implemented or supported data sources:
+
+Source | Purpose | Status in Project
+
+CMFRI state-wise fish landing estimates | Historical landing target values | Implemented
+
+Indian SST dataset | Environmental suitability signal | Implemented
+
+FishBase maturity-length reference | Maturity-based juvenile assessment | Implemented
+
+PFZ-style observation CSV | Exact juvenile-risk enrichment rows | Implemented
+
+Copernicus physics and chlorophyll | Future feature enrichment | Supported, optional
+
+The preprocessing steps include data cleaning, feature alignment by year and state, missing-value handling, numeric normalization, and generation of engineered features such as thermal stress, oxygen stress, salinity anomaly, and cyclical month encoding.
+
+3.3 Fish Availability Prediction using Machine Learning
+Fish availability is modeled as a binary classification problem. The primary inputs are SST, salinity, dissolved oxygen, historical catch, latitude, longitude, month encodings, and stress-based features. The implemented models are:
+
+- Random Forest Classifier
+- Boosting Classifier
+- Hybrid PCA + Random Forest + Boosting Classifier
+The software is designed for XGBoost-ready execution. However, on the current development machine, the boosting path falls back to Gradient Boosting because the native XGBoost runtime requires the OpenMP library libomp.dylib.
+
+3.4 Catch Quantity Estimation
+Expected catch quantity is modeled as a regression task. For fishing zones predicted as favorable, the system estimates catch volume using:
+
+- Random Forest Regressor
+- Boosting Regressor
+- Hybrid PCA + Random Forest + Boosting Regressor
+3.5 Juvenile Risk Assessment Layer
+The juvenile-risk layer uses exact maturity-based logic whenever biological observation inputs are available. The core equation is:
+
+JR = 1 - (Observed Length / Maturity Length)
+
+Risk labels are assigned as follows:
+
+- High if JR is greater than or equal to 0.2
+- Medium if JR is greater than 0 and less than 0.2
+- Low if the observed length is at or above maturity length
+When exact biological inputs are unavailable, the system uses an environmental fallback juvenile model based on thermal stress, oxygen stress, and historical catch behavior. This allows the application to remain functional while still prioritizing exact biological reasoning whenever possible.
+
+3.6 Safe-Zone Recommendation and System Deployment
+The final decision engine combines the outputs of availability, quantity, and juvenile-risk. If juvenile-risk is high, fishing recommendations are blocked and the system suggests safer nearby zones within approximately 8-15 km. The application is deployed using Streamlit and supports manual prediction, region-based prediction, map-based prediction, and field-data collection for enriching exact juvenile labels.
+
+Chapter 4: Results and Discussion
+
+4.1 Case Study: AI Driven Fish Catch Prediction for Sustainable Fisheries
+The final system was validated on the current project dataset generated through the implemented scripts. The integrated dataset contains fisheries target values, SST-linked environmental features, PFZ-style field records, and maturity references. The application layer supports both predictive inference and ecological advisory behavior.
+
+4.1.1 System Configuration and Technical Details
+The system is implemented using Python 3.12 and the following libraries: pandas, numpy, scikit-learn, xarray, joblib, Streamlit, and Folium. The codebase contains scripts for data integration, model training, validation, and deployment. The application also includes a field observation form to store exact juvenile-ready rows inside the PFZ CSV.
+
+The validated dataset currently contains:
+
+- Total integrated rows: 110
+- Field observation rows: 3
+- Exact-ready field rows: 3
+- Juvenile exact-label rows used during training: 3
+4.1.2 Performance Evaluation and Validation
+The system includes automated validation and unit tests. The latest baseline metrics are summarized below.
+
+Model | Task | Metric | Value
+
+Random Forest | Availability | Accuracy | 0.5909
+
+Random Forest | Quantity | RMSE | 82478.3759
+
+Boosting | Availability | Accuracy | 0.5000
+
+Boosting | Quantity | RMSE | 91903.1661
+
+Hybrid | Availability | Accuracy | 0.4545
+
+Hybrid | Quantity | RMSE | 76830.9764
+
+Juvenile Model | Risk Classification | Accuracy | 0.9091
+
+Juvenile Model | Risk Classification | Weighted F1 | 0.8874
+
+4.2 Results and Discussion
+4.2.1 Fish Availability Prediction Results
+Random Forest shows the strongest availability classification among the currently trained models. The absolute accuracy remains moderate because the base target dataset is still relatively small and coarse-grained, but the model is sufficient for operational demo use and for illustrating a fisheries decision-support workflow.
+
+4.2.2 Catch Quantity Estimation Results
+Catch quantity prediction is more variable due to the nature of fish landing data. The Hybrid model yields the best RMSE among the currently trained regressors, suggesting that dimensionality reduction plus ensemble regression can be useful on structured fisheries data with limited row count.
+
+4.2.3 Juvenile Risk Assessment Results
+The most significant improvement in this project is the integration of exact maturity-based risk logic. The current juvenile-risk training distribution contains 107 environmental heuristic rows and 3 exact maturity-rule rows. This confirms that the project has moved beyond a purely heuristic juvenile layer and now supports biologically exact labeling when species and length observations are available.
+
+4.2.4 Safe-Zone Recommendation Results
+When ecological risk is high or predicted fish availability is weak, the system recommends nearby lower-risk alternatives. This recommendation layer improves the practical usefulness of the application by giving the user actionable alternatives rather than only a rejection.
+
+4.2.5 Application Interface and Deployment
+The Streamlit application supports manual input, region-based prediction, and map-based prediction. It also includes a field-data recording sidebar for adding new PFZ-style observations. The latest application update preserves prediction summaries using session state, ensuring that the results remain visible after form submission.
+
+4.3 Summary of Results
+The results demonstrate that the system is functional, testable, and better aligned with sustainable fisheries than a simple catch-prediction-only system. The integration of juvenile-risk assessment and safe-zone advisory is the main practical contribution of the work.
+
+Chapter 5: Conclusions and Future Scope of Work
+
+5.1 Conclusion
+This project presents a practical AI Driven Fish Catch Prediction System with Juvenile Risk Assessment for Sustainable Fisheries. The system integrates fisheries data, environmental indicators, machine learning models, maturity-based juvenile screening, and safe-zone recommendation into a single deployable application. It provides a realistic and defensible implementation aligned with the datasets actually available to the project.
+
+5.2 Contributions of the Proposed System
+- A real-data pipeline using CMFRI landings and SST-based environmental features.
+- A maturity-based juvenile-risk layer integrated into prediction and advisory logic.
+- A safe-zone recommendation mechanism for ecologically safer decision support.
+- A Streamlit interface with manual, region-based, and map-based prediction.
+- A field-data capture path for increasing exact juvenile-risk training rows over time.
+- A reproducible validation workflow with automated metrics and tests.
+5.3 Practical Implications and Applications
+The proposed system can support fisheries awareness, academic demonstrations, local decision-support prototypes, and sustainability-focused advisory tools. It is especially useful as a project framework that can continue growing as more monthly, district-level, or field observation data become available.
+
+5.4 Recommendations for Future Work
+- Integrate monthly or district-level CMFRI landings for finer-grained prediction.
+- Add Copernicus salinity, currents, chlorophyll, and physical ocean features.
+- Expand PFZ and observed-length data collection to increase exact juvenile labels.
+- Enable native XGBoost by installing the required OpenMP runtime on macOS.
+- Add richer geospatial visualization and temporal forecasting in future versions.
+If suitable annotated fish video datasets become available later, a separate future extension may explore behavior-based or vision-based juvenile analysis. However, that is beyond the scope of the current implemented system.
+
+Chapter 6: References
+
+- CMFRI Fish Catch Estimates. https://www.cmfri.org.in/fish-catch-estimates
+- CMFRI Methodology. https://www.cmfri.org.in/methodology
+- NOAA Optimum Interpolation Sea Surface Temperature. https://www.ncei.noaa.gov/products/optimum-interpolation-sst
+- Copernicus Marine Physics Reanalysis. https://data.marine.copernicus.eu/product/GLOBAL_MULTIYEAR_PHY_001_030/description
+- Copernicus Ocean Colour Chlorophyll Product. https://data.marine.copernicus.eu/product/OCEANCOLOUR_GLO_BGC_L3_MY_009_103/description
+- INCOIS PFZ Advisory. https://services.incois.gov.in/MarineFisheries/PfzAdvisory.action
+- INCOIS Marine Fisheries Text Data. https://services.incois.gov.in/MarineFisheries/TextDataHome?mfid=1&request_locale=en
+- FishBase Glossary: Length at First Maturity. https://www.fishbase.se/glossary/Glossary.php?q=length+at+first+maturity
+- scikit-learn Documentation. https://scikit-learn.org/
+- Streamlit Documentation. https://streamlit.io/
+Appendix
+
+Appendix A: Implemented Algorithms
+- Random Forest Classifier
+- Random Forest Regressor
+- Boosting Classifier
+- Boosting Regressor
+- PCA + Hybrid Voting Classifier
+- PCA + Hybrid Voting Regressor
+- Exact maturity-based juvenile-risk assessment
+Appendix B: Project Execution Commands
+.venv/bin/python src/check_external_datasets.py
+.venv/bin/python src/run_full_pipeline.py
+.venv/bin/python src/validate_project.py
+.venv/bin/python -m unittest discover -s tests
+.venv/bin/streamlit run src/app.py --server.headless true --server.port 8501
+
+Appendix C: Validation Procedure
+The system is validated at three levels:
+
+- Dataset validation: verifies integrated rows, field observation rows, and exact-ready rows.
+- Model validation: reports classification accuracy, weighted F1 score, and regression RMSE.
+- Logic validation: verifies exact maturity high-risk, low-risk, and environmental fallback scenarios.
+The current validated project status is:
+
+- Integrated dataset rows: 110
+- Field observation rows: 3
+- Exact-ready field rows: 3
+- Juvenile exact-label rows in training: 3
+- Automated tests passed: 5

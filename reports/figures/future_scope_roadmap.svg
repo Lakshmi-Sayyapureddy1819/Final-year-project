@@ -1,0 +1,40 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="350" viewBox="0 0 1200 350">
+  <defs>
+    <style>
+      .title { font: bold 28px 'Times New Roman', serif; fill: #1d3557; }
+      .box { fill: #f8fbff; stroke: #355070; stroke-width: 2.5; rx: 16; ry: 16; }
+      .txt { font: 21px 'Times New Roman', serif; fill: #222; }
+      .arrow { stroke: #444; stroke-width: 3; fill: none; marker-end: url(#m); }
+    </style>
+    <marker id="m" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto">
+      <path d="M0,0 L12,6 L0,12 Z" fill="#444"/>
+    </marker>
+  </defs>
+
+  <text x="430" y="42" class="title">Future Scope Roadmap</text>
+
+  <rect x="30" y="130" width="180" height="90" class="box"/>
+  <text x="64" y="170" class="txt">Current Working</text>
+  <text x="84" y="198" class="txt">Prototype</text>
+
+  <rect x="250" y="130" width="200" height="90" class="box"/>
+  <text x="277" y="170" class="txt">Monthly / District</text>
+  <text x="300" y="198" class="txt">Level Dataset</text>
+
+  <rect x="490" y="130" width="200" height="90" class="box"/>
+  <text x="530" y="170" class="txt">More Oceanic</text>
+  <text x="537" y="198" class="txt">Variables</text>
+
+  <rect x="730" y="130" width="180" height="90" class="box"/>
+  <text x="757" y="170" class="txt">Native XGBoost</text>
+  <text x="773" y="198" class="txt">Execution</text>
+
+  <rect x="950" y="130" width="220" height="90" class="box"/>
+  <text x="977" y="170" class="txt">Large-Scale Field</text>
+  <text x="992" y="198" class="txt">Validation</text>
+
+  <path d="M210 175 L250 175" class="arrow"/>
+  <path d="M450 175 L490 175" class="arrow"/>
+  <path d="M690 175 L730 175" class="arrow"/>
+  <path d="M910 175 L950 175" class="arrow"/>
+</svg>

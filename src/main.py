@@ -1,10 +1,10 @@
-from prediction_engine import predict_fishing_zone
+from prediction_engine import known_species, predict_fishing_zone
 
 
 PIPELINES = {
     "1": ("Random Forest", "random_forest"),
-    "2": ("XGBoost", "xgboost"),
-    "3": ("Hybrid (PCA + RF + Boosting)", "hybrid"),
+    "2": ("Boosting", "xgboost"),
+    "3": ("Hybrid (PCA + RF + ET + Boosting)", "hybrid"),
 }
 
 
@@ -49,10 +49,16 @@ pipeline_key = input("Selection [1]: ").strip() or "1"
 _, model_choice = PIPELINES.get(pipeline_key, PIPELINES["1"])
 
 use_refinement = input("Add maturity-based juvenile risk? [y/N]: ").strip().lower() == "y"
+species = None
 observed_length = None
 maturity_length = None
 
 if use_refinement:
+    species_list = known_species()
+    if species_list:
+        print("\nKnown species:", ", ".join(species_list))
+    species_value = input("Species name (optional): ").strip()
+    species = species_value or None
     observed_length = read_optional_float("Observed fish length in cm (optional): ")
     maturity_length = read_optional_float("Species maturity length in cm (optional): ")
 
@@ -62,6 +68,7 @@ result = predict_fishing_zone(
     salinity=salinity,
     dissolved_oxygen=dissolved_oxygen,
     historical_catch=historical_catch,
+    species=species,
     latitude=latitude,
     longitude=longitude,
     model_choice=model_choice,
@@ -78,9 +85,14 @@ print(f"Availability Score: {result.availability_score:.2f}")
 print(f"Predicted Catch Quantity: {result.quantity:.2f} kg")
 print(f"Juvenile Risk Level: {result.juvenile_risk}")
 print(f"Base Juvenile Layer: {result.base_juvenile_risk}")
+print(f"Juvenile Method: {result.juvenile_method}")
+if result.species:
+    print(f"Species: {result.species}")
 
 if result.maturity_score is not None:
     print(f"Maturity Risk Score: {result.maturity_score:.2f}")
+if result.maturity_length_cm is not None:
+    print(f"Applied Maturity Length: {result.maturity_length_cm:.2f} cm")
 
 print(f"Advisory: {result.advisory}")
 

@@ -1,0 +1,60 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1100" height="760" viewBox="0 0 1100 760">
+  <defs>
+    <style>
+      .title { font: bold 28px 'Times New Roman', serif; fill: #1d3557; }
+      .box { fill: #f8fbff; stroke: #355070; stroke-width: 2.4; rx: 12; ry: 12; }
+      .dec { fill: #fff3e6; stroke: #bc6c25; stroke-width: 2.4; }
+      .good { fill: #ecfdf3; stroke: #2d6a4f; stroke-width: 2.4; rx: 12; ry: 12; }
+      .bad { fill: #fff1f2; stroke: #c1121f; stroke-width: 2.4; rx: 12; ry: 12; }
+      .txt { font: 22px 'Times New Roman', serif; fill: #222; }
+      .small { font: 20px 'Times New Roman', serif; fill: #222; }
+      .arrow { stroke: #444; stroke-width: 3; fill: none; marker-end: url(#m); }
+    </style>
+    <marker id="m" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto">
+      <path d="M0,0 L12,6 L0,12 Z" fill="#444"/>
+    </marker>
+  </defs>
+
+  <text x="280" y="42" class="title">Juvenile-Risk Assessment and Safe-Zone Recommendation</text>
+
+  <rect x="380" y="90" width="320" height="85" class="box"/>
+  <text x="494" y="142" class="txt">User Input</text>
+
+  <polygon points="390,240 550,170 710,240 550,310" class="dec"/>
+  <text x="455" y="232" class="txt">Species and</text>
+  <text x="447" y="262" class="txt">Length Available?</text>
+
+  <rect x="120" y="380" width="320" height="90" class="box"/>
+  <text x="164" y="420" class="txt">Exact Maturity Rule</text>
+  <text x="148" y="452" class="small">JR = 1 - Lobs / Lmat</text>
+
+  <rect x="650" y="380" width="320" height="90" class="box"/>
+  <text x="698" y="420" class="txt">Environmental Juvenile</text>
+  <text x="772" y="452" class="small">Fallback Model</text>
+
+  <rect x="380" y="540" width="320" height="85" class="box"/>
+  <text x="448" y="575" class="txt">Juvenile Risk Level</text>
+  <text x="470" y="607" class="small">High / Medium / Low</text>
+
+  <polygon points="390,690 550,625 710,690 550,755" class="dec"/>
+  <text x="488" y="699" class="txt">Risk High?</text>
+
+  <rect x="80" y="620" width="220" height="85" class="bad"/>
+  <text x="123" y="670" class="txt">Avoid Current Zone</text>
+
+  <rect x="800" y="620" width="220" height="85" class="good"/>
+  <text x="865" y="670" class="txt">Accept Zone</text>
+
+  <rect x="80" y="60" width="250" height="85" class="good"/>
+  <text x="128" y="112" class="txt">Safe-Zone Search</text>
+
+  <path d="M540 175 L548 195" class="arrow"/>
+  <path d="M460 272 L310 380" class="arrow"/>
+  <path d="M640 272 L790 380" class="arrow"/>
+  <path d="M280 470 L470 540" class="arrow"/>
+  <path d="M810 470 L630 540" class="arrow"/>
+  <path d="M540 625 L548 645" class="arrow"/>
+  <path d="M395 700 L300 675" class="arrow"/>
+  <path d="M705 700 L800 675" class="arrow"/>
+  <path d="M190 620 L205 145" class="arrow"/>
+</svg>
