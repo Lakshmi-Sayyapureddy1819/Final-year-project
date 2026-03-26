@@ -57,8 +57,9 @@ st.markdown(
     --sea-teal: #1f7a8c;
     --reef-gold: #f4b860;
     --surf: #eef6fb;
-    --card: rgba(255, 255, 255, 0.82);
+    --card: rgba(255, 255, 255, 0.9);
     --line: rgba(18, 52, 86, 0.12);
+    --sand: #f3ede1;
 }
 
 @keyframes tideShift {
@@ -77,19 +78,129 @@ st.markdown(
     50% { box-shadow: 0 22px 50px rgba(31, 122, 140, 0.22); }
 }
 
+@keyframes boatDrift {
+    0%, 100% { transform: translateX(0px) translateY(0px); }
+    50% { transform: translateX(10px) translateY(-5px); }
+}
+
+@keyframes floatPulse {
+    0%, 100% { transform: translateY(0px); }
+    50% { transform: translateY(-8px); }
+}
+
 .stApp {
     background:
-        radial-gradient(circle at top left, rgba(38, 84, 124, 0.18), transparent 32%),
-        radial-gradient(circle at top right, rgba(31, 122, 140, 0.16), transparent 28%),
-        linear-gradient(180deg, #f4f8fb 0%, #edf5fb 42%, #f7fbff 100%);
-    background-size: 160% 160%, 150% 150%, 100% 100%;
-    animation: tideShift 18s ease-in-out infinite;
+        radial-gradient(circle at top left, rgba(55, 112, 148, 0.14), transparent 30%),
+        radial-gradient(circle at 85% 12%, rgba(244, 184, 96, 0.14), transparent 24%),
+        linear-gradient(180deg, rgba(255,255,255,0.0), rgba(255,255,255,0.0)),
+        linear-gradient(180deg, #f6efe3 0%, #eef4f8 24%, #edf6fb 60%, #f9fcff 100%);
+    background-size: 165% 165%, 150% 150%, 28px 28px, 100% 100%;
+    background-image:
+        radial-gradient(circle at top left, rgba(55, 112, 148, 0.14), transparent 30%),
+        radial-gradient(circle at 85% 12%, rgba(244, 184, 96, 0.14), transparent 24%),
+        linear-gradient(135deg, rgba(31,122,140,0.035) 25%, transparent 25%, transparent 50%, rgba(31,122,140,0.035) 50%, rgba(31,122,140,0.035) 75%, transparent 75%, transparent),
+        linear-gradient(180deg, #f6efe3 0%, #eef4f8 24%, #edf6fb 60%, #f9fcff 100%);
+    animation: tideShift 22s ease-in-out infinite;
 }
 
 .block-container {
     max-width: 1320px;
-    padding-top: 1.4rem;
+    padding-top: 1rem;
     padding-bottom: 3rem;
+}
+
+.site-nav {
+    position: relative;
+    top: 0;
+    z-index: 30;
+    margin-bottom: 1.1rem;
+}
+
+.site-nav-shell {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 0.9rem 1.1rem;
+    border-radius: 22px;
+    background: rgba(255, 255, 255, 0.96);
+    border: 1px solid rgba(15, 39, 66, 0.12);
+    backdrop-filter: blur(14px);
+    box-shadow: 0 18px 40px rgba(15, 39, 66, 0.12);
+}
+
+h1, h2, h3, h4, h5, h6 {
+    color: #102c49 !important;
+}
+
+.stMarkdown h1,
+.stMarkdown h2,
+.stMarkdown h3,
+.stMarkdown h4,
+.stMarkdown h5,
+.stMarkdown h6 {
+    color: #102c49 !important;
+}
+
+label,
+.stRadio label,
+.stCheckbox label,
+.stSelectbox label,
+.stNumberInput label,
+.stTextInput label,
+.stTextArea label,
+.stDateInput label {
+    color: #163754 !important;
+    font-weight: 600 !important;
+}
+
+.nav-brand {
+    display: flex;
+    align-items: center;
+    gap: 0.8rem;
+}
+
+.nav-mark {
+    width: 42px;
+    height: 42px;
+    border-radius: 14px;
+    display: grid;
+    place-items: center;
+    background: linear-gradient(135deg, #0f2742 0%, #1f7a8c 100%);
+    color: #ffffff;
+    font-weight: 700;
+    font-size: 1rem;
+    box-shadow: 0 14px 28px rgba(15, 39, 66, 0.2);
+}
+
+.nav-title {
+    color: #0b2540;
+    font-weight: 700;
+    font-size: 1.22rem;
+    line-height: 1.15;
+}
+
+.nav-links {
+    display: flex;
+    align-items: center;
+    gap: 0.55rem;
+    flex-wrap: wrap;
+}
+
+.nav-links a {
+    text-decoration: none;
+    color: #1f4e79;
+    font-weight: 600;
+    padding: 0.55rem 0.88rem;
+    border-radius: 999px;
+    background: rgba(31, 78, 121, 0.06);
+    border: 1px solid rgba(31, 78, 121, 0.08);
+    transition: transform 0.18s ease, background 0.18s ease;
+}
+
+.nav-links a:hover {
+    transform: translateY(-1px);
+    background: rgba(31, 122, 140, 0.1);
 }
 
 [data-testid="stSidebar"] {
@@ -104,6 +215,25 @@ st.markdown(
 [data-testid="stSidebar"] .stCaption,
 [data-testid="stSidebar"] .stMarkdown p {
     color: rgba(244, 248, 251, 0.86) !important;
+}
+
+[data-testid="stSidebar"] [data-baseweb="select"] > div,
+[data-testid="stSidebar"] [data-baseweb="input"] > div,
+[data-testid="stSidebar"] textarea {
+    background: rgba(255, 255, 255, 0.96) !important;
+    border: 1px solid rgba(21, 59, 97, 0.16) !important;
+}
+
+[data-testid="stSidebar"] [data-baseweb="select"] div,
+[data-testid="stSidebar"] [data-baseweb="select"] span,
+[data-testid="stSidebar"] [data-baseweb="select"] input,
+[data-testid="stSidebar"] [data-baseweb="input"] div,
+[data-testid="stSidebar"] [data-baseweb="input"] span,
+[data-testid="stSidebar"] [data-baseweb="input"] input,
+[data-testid="stSidebar"] textarea,
+[data-testid="stSidebar"] svg {
+    color: #153b61 !important;
+    fill: #153b61 !important;
 }
 
 [data-testid="stSidebar"] .stAlert {
@@ -129,10 +259,96 @@ div[data-testid="stMetric"] {
     box-shadow: 0 10px 26px rgba(15, 39, 66, 0.08);
 }
 
+[data-testid="stMetricLabel"],
+[data-testid="stMetricValue"],
+[data-testid="stMetricDelta"] {
+    color: #153b61 !important;
+}
+
 div[data-testid="stDataFrame"],
 div[data-testid="stTabs"],
 div[data-testid="stExpander"] {
     animation: riseIn 0.55s ease;
+}
+
+[data-testid="stDataFrame"] div,
+[data-testid="stDataFrame"] span,
+[data-testid="stDataFrame"] p,
+[data-testid="stTable"] div,
+[data-testid="stTable"] span {
+    color: #153b61 !important;
+}
+
+[data-testid="stAlert"] {
+    border-radius: 18px;
+}
+
+[data-testid="stAlert"] p,
+[data-testid="stAlert"] div,
+[data-testid="stAlert"] span {
+    color: #153b61 !important;
+}
+
+[data-testid="stCodeBlock"] pre,
+[data-testid="stCode"] pre {
+    background: #0f2742 !important;
+    color: #f7fbff !important;
+    border-radius: 18px !important;
+}
+
+.stCaption,
+[data-testid="stCaptionContainer"] {
+    color: #4f6980 !important;
+}
+
+.stMarkdown p,
+.stMarkdown li,
+.stMarkdown label,
+.stMarkdown span {
+    color: #244760;
+}
+
+.stMarkdown strong,
+.stMarkdown b {
+    color: #102c49;
+}
+
+[data-testid="stMarkdownContainer"] p,
+[data-testid="stMarkdownContainer"] li,
+[data-testid="stMarkdownContainer"] span {
+    color: #244760 !important;
+}
+
+[data-testid="stMarkdownContainer"] h1,
+[data-testid="stMarkdownContainer"] h2,
+[data-testid="stMarkdownContainer"] h3,
+[data-testid="stMarkdownContainer"] h4,
+[data-testid="stMarkdownContainer"] h5,
+[data-testid="stMarkdownContainer"] h6 {
+    color: #102c49 !important;
+}
+
+[data-testid="stRadio"] label,
+[data-testid="stCheckbox"] label {
+    color: #163754 !important;
+}
+
+[data-baseweb="radio"] label,
+[data-baseweb="checkbox"] label {
+    color: #153b61 !important;
+}
+
+[data-baseweb="select"] input,
+[data-baseweb="input"] input,
+textarea {
+    color: #153b61 !important;
+}
+
+[data-baseweb="select"] > div,
+[data-baseweb="input"] > div,
+textarea {
+    background: rgba(255,255,255,0.94) !important;
+    border: 1px solid rgba(31, 78, 121, 0.16) !important;
 }
 
 .stButton > button,
@@ -211,7 +427,7 @@ button[role="tab"][aria-selected="true"] {
     position: relative;
     z-index: 1;
     display: grid;
-    grid-template-columns: 1.5fr 1fr;
+    grid-template-columns: 1.4fr 1fr;
     gap: 1.5rem;
     align-items: end;
 }
@@ -233,6 +449,7 @@ button[role="tab"][aria-selected="true"] {
     font-size: 2.65rem;
     line-height: 1.02;
     margin: 0 0 0.8rem;
+    color: #f7fbff !important;
 }
 
 .hero-copy p {
@@ -240,7 +457,7 @@ button[role="tab"][aria-selected="true"] {
     margin: 0;
     font-size: 1rem;
     line-height: 1.65;
-    color: rgba(247, 251, 255, 0.88);
+    color: rgba(247, 251, 255, 0.94) !important;
 }
 
 .hero-tags {
@@ -256,12 +473,92 @@ button[role="tab"][aria-selected="true"] {
     background: rgba(255, 255, 255, 0.14);
     border: 1px solid rgba(255, 255, 255, 0.16);
     font-size: 0.86rem;
+    color: #f7fbff !important;
 }
 
 .hero-kpis {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 0.8rem;
+}
+
+.hero-visual {
+    position: relative;
+    min-height: 320px;
+    display: flex;
+    align-items: end;
+    justify-content: center;
+}
+
+.hero-visual::before {
+    content: "";
+    position: absolute;
+    inset: 1rem 0.5rem 0.3rem;
+    border-radius: 28px;
+    background: linear-gradient(180deg, rgba(255,255,255,0.12) 0%, rgba(255,255,255,0.04) 100%);
+    border: 1px solid rgba(255,255,255,0.12);
+    backdrop-filter: blur(8px);
+}
+
+.hero-scene {
+    position: relative;
+    z-index: 1;
+    width: 100%;
+    max-width: 430px;
+    animation: boatDrift 8s ease-in-out infinite;
+}
+
+.hero-scene svg {
+    width: 100%;
+    height: auto;
+    display: block;
+    filter: drop-shadow(0 18px 30px rgba(0,0,0,0.18));
+}
+
+.hero-float {
+    position: absolute;
+    z-index: 1;
+    color: rgba(255,255,255,0.84);
+    font-size: 1.5rem;
+    animation: floatPulse 4.8s ease-in-out infinite;
+}
+
+.hero-float.left {
+    left: 0.8rem;
+    top: 2rem;
+}
+
+.hero-float.right {
+    right: 1.2rem;
+    top: 3.4rem;
+    animation-delay: 1.2s;
+}
+
+.hero-ribbon {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+    margin-top: 1rem;
+    padding: 0.55rem 0.85rem;
+    border-radius: 999px;
+    background: rgba(255,255,255,0.12);
+    border: 1px solid rgba(255,255,255,0.14);
+    color: rgba(247,251,255,0.96) !important;
+    font-size: 0.9rem;
+}
+
+.hero-shell .eyebrow,
+.hero-shell .hero-title,
+.hero-shell .hero-copy p,
+.hero-shell .hero-chip,
+.hero-shell .hero-ribbon,
+.hero-shell .hero-tags span,
+.hero-shell .hero-copy span {
+    color: #f7fbff !important;
+}
+
+.hero-shell .hero-copy p {
+    opacity: 1 !important;
 }
 
 .hero-stat,
@@ -301,9 +598,9 @@ button[role="tab"][aria-selected="true"] {
 .section-banner {
     border-left: 6px solid var(--sea-teal);
     border-radius: 22px;
-    background: rgba(255, 255, 255, 0.8);
-    padding: 1rem 1.1rem;
-    margin: 0.3rem 0 1rem;
+    background: rgba(255, 255, 255, 0.86);
+    padding: 1.05rem 1.15rem;
+    margin: 0.45rem 0 1rem;
     box-shadow: 0 14px 30px rgba(15, 39, 66, 0.07);
     animation: riseIn 0.55s ease;
 }
@@ -494,12 +791,73 @@ button[role="tab"][aria-selected="true"] {
     font-size: 0.92rem;
 }
 
+.section-anchor {
+    display: block;
+    position: relative;
+    top: -18px;
+    visibility: hidden;
+}
+
+.website-section {
+    margin-bottom: 1rem;
+}
+
+[data-testid="stHorizontalBlock"] > div:has(> div[role="radiogroup"]) {
+    background: rgba(255, 255, 255, 0.88);
+    border: 1px solid rgba(31, 78, 121, 0.1);
+    border-radius: 22px;
+    padding: 0.35rem;
+    box-shadow: 0 14px 28px rgba(15, 39, 66, 0.06);
+}
+
+div[role="radiogroup"] {
+    gap: 0.45rem !important;
+}
+
+div[role="radiogroup"] label {
+    border-radius: 999px !important;
+    padding: 0.5rem 0.9rem !important;
+    background: transparent;
+    transition: background 0.18s ease, transform 0.18s ease;
+}
+
+div[role="radiogroup"] label * {
+    color: #163754 !important;
+}
+
+div[role="radiogroup"] label:has(input:checked) {
+    background: linear-gradient(135deg, rgba(15, 39, 66, 0.96), rgba(31, 122, 140, 0.96));
+}
+
+div[role="radiogroup"] label:has(input:checked) * {
+    color: #ffffff !important;
+}
+
 @media (max-width: 1100px) {
+    .site-nav-shell,
     .hero-grid,
     .insight-grid,
     .result-grid,
     .analysis-grid {
         grid-template-columns: 1fr;
+    }
+
+    .site-nav-shell {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .nav-links {
+        justify-content: flex-start;
+    }
+
+    .hero-visual {
+        min-height: 260px;
+        margin-top: 0.6rem;
+    }
+
+    .site-nav {
+        margin-bottom: 0.85rem;
     }
 }
 </style>
@@ -582,6 +940,7 @@ def load_validation_snapshot() -> dict[str, object]:
 def render_hero(snapshot: dict[str, object], active_pipeline: str) -> None:
     st.markdown(
         f"""
+<div id="overview" class="section-anchor"></div>
 <section class="hero-shell">
   <div class="hero-grid">
     <div class="hero-copy">
@@ -597,31 +956,97 @@ def render_hero(snapshot: dict[str, object], active_pipeline: str) -> None:
         <span class="hero-chip">Best regressor: {snapshot['best_quantity_model']}</span>
         <span class="hero-chip">Exact juvenile rule enabled</span>
       </div>
+      <div class="hero-ribbon">Coastal decision support for fishers, field teams, and sustainable fisheries review</div>
     </div>
-    <div class="hero-kpis">
-      <div class="hero-stat">
-        <div class="hero-stat-label">Availability Accuracy</div>
-        <div class="hero-stat-value">{float(snapshot['best_availability_accuracy']) * 100:.2f}%</div>
-        <div class="hero-stat-note">{snapshot['best_availability_model']}</div>
+    <div class="hero-visual">
+      <div class="hero-float left">~</div>
+      <div class="hero-float right">~</div>
+      <div class="hero-scene">
+        <svg viewBox="0 0 520 360" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Fishing boat scene">
+          <defs>
+            <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stop-color="#f9d18b"/>
+              <stop offset="48%" stop-color="#79c9dd"/>
+              <stop offset="100%" stop-color="#1b5d8f"/>
+            </linearGradient>
+            <linearGradient id="sea" x1="0" y1="0" x2="1" y2="0">
+              <stop offset="0%" stop-color="#1f7a8c"/>
+              <stop offset="100%" stop-color="#163f6a"/>
+            </linearGradient>
+          </defs>
+          <rect x="0" y="0" width="520" height="360" rx="28" fill="url(#sky)"/>
+          <circle cx="404" cy="82" r="36" fill="#ffd77a" opacity="0.92"/>
+          <path d="M0 214 C55 194, 116 188, 182 206 C245 224, 305 229, 363 210 C420 191, 473 191, 520 212 L520 360 L0 360 Z" fill="url(#sea)"/>
+          <path d="M0 246 C62 228, 124 225, 190 242 C253 258, 326 263, 392 244 C450 228, 487 229, 520 239" stroke="rgba(255,255,255,0.42)" stroke-width="5" fill="none"/>
+          <path d="M0 280 C62 262, 124 259, 190 276 C253 292, 326 297, 392 278 C450 262, 487 263, 520 273" stroke="rgba(255,255,255,0.34)" stroke-width="4" fill="none"/>
+          <path d="M145 215 L307 215 L336 253 L184 253 Z" fill="#673f2d"/>
+          <path d="M170 198 L276 198 L307 215 L145 215 Z" fill="#8b5a3d"/>
+          <rect x="224" y="122" width="8" height="78" fill="#2a2a2a"/>
+          <path d="M232 128 L285 155 L232 183 Z" fill="#f7fbff" opacity="0.96"/>
+          <path d="M215 152 L170 180" stroke="#2a2a2a" stroke-width="4"/>
+          <circle cx="205" cy="145" r="10" fill="#14243a"/>
+          <path d="M205 155 L205 188" stroke="#14243a" stroke-width="7" stroke-linecap="round"/>
+          <path d="M205 170 L187 188" stroke="#14243a" stroke-width="6" stroke-linecap="round"/>
+          <path d="M205 169 L223 187" stroke="#14243a" stroke-width="6" stroke-linecap="round"/>
+          <path d="M205 188 L190 208" stroke="#14243a" stroke-width="6" stroke-linecap="round"/>
+          <path d="M205 188 L220 208" stroke="#14243a" stroke-width="6" stroke-linecap="round"/>
+          <path d="M170 180 C155 212, 132 235, 111 246" stroke="#f1f5f9" stroke-width="3" fill="none" opacity="0.85"/>
+          <ellipse cx="109" cy="248" rx="18" ry="8" fill="#d6eef2" opacity="0.9"/>
+          <path d="M100 248 L84 241" stroke="#d6eef2" stroke-width="4" stroke-linecap="round"/>
+          <path d="M100 248 L84 255" stroke="#d6eef2" stroke-width="4" stroke-linecap="round"/>
+          <path d="M342 92 Q356 80 369 93" stroke="#ffffff" stroke-width="3" fill="none" opacity="0.9"/>
+          <path d="M367 96 Q381 84 394 97" stroke="#ffffff" stroke-width="3" fill="none" opacity="0.88"/>
+        </svg>
       </div>
-      <div class="hero-stat">
-        <div class="hero-stat-label">Juvenile Accuracy</div>
-        <div class="hero-stat-value">{float(snapshot['juvenile_accuracy']) * 100:.2f}%</div>
-        <div class="hero-stat-note">Balanced juvenile model</div>
-      </div>
-      <div class="hero-stat">
-        <div class="hero-stat-label">Training Rows</div>
-        <div class="hero-stat-value">{int(snapshot['dataset_rows'])}</div>
-        <div class="hero-stat-note">{int(snapshot['field_rows'])} field observations</div>
-      </div>
-      <div class="hero-stat">
-        <div class="hero-stat-label">Exact-Ready Rows</div>
-        <div class="hero-stat-value">{int(snapshot['exact_ready_rows'])}</div>
-        <div class="hero-stat-note">{int(snapshot['tests_ready'])} demo checks passing</div>
+      <div class="hero-kpis" style="position:absolute; left: 0.9rem; right: 0.9rem; bottom: 0.9rem; z-index:2;">
+        <div class="hero-stat">
+          <div class="hero-stat-label">Availability Accuracy</div>
+          <div class="hero-stat-value">{float(snapshot['best_availability_accuracy']) * 100:.2f}%</div>
+          <div class="hero-stat-note">{snapshot['best_availability_model']}</div>
+        </div>
+        <div class="hero-stat">
+          <div class="hero-stat-label">Juvenile Accuracy</div>
+          <div class="hero-stat-value">{float(snapshot['juvenile_accuracy']) * 100:.2f}%</div>
+          <div class="hero-stat-note">Balanced juvenile model</div>
+        </div>
+        <div class="hero-stat">
+          <div class="hero-stat-label">Training Rows</div>
+          <div class="hero-stat-value">{int(snapshot['dataset_rows'])}</div>
+          <div class="hero-stat-note">{int(snapshot['field_rows'])} field observations</div>
+        </div>
+        <div class="hero-stat">
+          <div class="hero-stat-label">Exact-Ready Rows</div>
+          <div class="hero-stat-value">{int(snapshot['exact_ready_rows'])}</div>
+          <div class="hero-stat-note">{int(snapshot['tests_ready'])} demo checks passing</div>
+        </div>
       </div>
     </div>
   </div>
 </section>
+""",
+        unsafe_allow_html=True,
+    )
+
+
+def render_top_navigation() -> None:
+    st.markdown(
+        """
+<nav class="site-nav">
+  <div class="site-nav-shell">
+    <div class="nav-brand">
+      <div class="nav-mark">FC</div>
+      <div>
+        <div class="nav-title">Fish Catch Prediction System</div>
+      </div>
+    </div>
+    <div class="nav-links">
+      <a href="#overview">Overview</a>
+      <a href="#field-intel">Field Intel</a>
+      <a href="#prediction-lab">Prediction Lab</a>
+      <a href="#viva-demo">Viva Demo</a>
+    </div>
+  </div>
+</nav>
 """,
         unsafe_allow_html=True,
     )
@@ -676,6 +1101,33 @@ def render_mode_intro(selected_mode: str) -> None:
     }
     st.markdown(section_banner(selected_mode, descriptions[selected_mode]), unsafe_allow_html=True)
     render_insight_cards(mode_cards[selected_mode])
+
+
+def render_field_intelligence(summary: dict[str, int], snapshot: dict[str, object]) -> None:
+    st.markdown('<div id="field-intel" class="section-anchor"></div>', unsafe_allow_html=True)
+    st.markdown(
+        section_banner(
+            "Field Intelligence",
+            "A quick project-status section that shows the biological readiness of the dataset and the current validation posture.",
+        ),
+        unsafe_allow_html=True,
+    )
+    render_insight_cards(
+        [
+            (
+                "Observation Coverage",
+                f"{summary['rows']} field records are stored right now, covering {summary['states']} coastal states and {summary['species']} species entries.",
+            ),
+            (
+                "Exact-Ready Biology",
+                f"{summary['exact_ready_rows']} rows currently support exact juvenile reasoning through observed and maturity lengths.",
+            ),
+            (
+                "Validation Snapshot",
+                f"{int(snapshot['tests_ready'])} demo checks are passing and the latest dataset includes {int(snapshot['dataset_rows'])} training rows.",
+            ),
+        ]
+    )
 
 
 def render_result_header(result: PredictionResult) -> None:
@@ -876,6 +1328,8 @@ def advisory_export_text(payload: dict[str, object], result: PredictionResult, c
 validation_snapshot = load_validation_snapshot()
 field_summary = observation_summary()
 
+render_top_navigation()
+
 with st.sidebar:
     st.header("Prediction Setup")
     selected_pipeline = st.selectbox("ML pipeline", list(PIPELINE_OPTIONS.keys()), index=0)
@@ -938,6 +1392,8 @@ with st.sidebar:
         st.dataframe(recent_frame, use_container_width=True, hide_index=True)
 
 render_hero(validation_snapshot, selected_pipeline)
+render_field_intelligence(field_summary, validation_snapshot)
+st.markdown('<div id="prediction-lab" class="section-anchor"></div>', unsafe_allow_html=True)
 menu = st.radio("Choose prediction method", ["Manual Input", "Select Region", "Map Based GPS Input"], horizontal=True)
 render_mode_intro(menu)
 
@@ -1266,6 +1722,7 @@ else:
         display_saved_result("Map Based GPS Input")
 
 st.write("---")
+st.markdown('<div id="viva-demo" class="section-anchor"></div>', unsafe_allow_html=True)
 st.markdown(
     section_banner(
         "Viva Algorithm Demo",
